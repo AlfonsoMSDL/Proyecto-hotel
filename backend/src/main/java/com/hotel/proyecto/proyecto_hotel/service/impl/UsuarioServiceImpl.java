@@ -9,8 +9,6 @@ import com.hotel.proyecto.proyecto_hotel.model.enums.Rol;
 import com.hotel.proyecto.proyecto_hotel.repository.UsuarioRepository;
 import com.hotel.proyecto.proyecto_hotel.service.UsuarioService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

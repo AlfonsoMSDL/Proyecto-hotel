@@ -3,7 +3,6 @@ package com.hotel.proyecto.proyecto_hotel.service.impl;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetFoto;
 import com.hotel.proyecto.proyecto_hotel.mapper.FotoMapper;
 import com.hotel.proyecto.proyecto_hotel.model.Foto;
-import com.hotel.proyecto.proyecto_hotel.model.Habitacion;
 import com.hotel.proyecto.proyecto_hotel.repository.FotoRepository;
 import com.hotel.proyecto.proyecto_hotel.service.FotoService;
 import lombok.AllArgsConstructor;

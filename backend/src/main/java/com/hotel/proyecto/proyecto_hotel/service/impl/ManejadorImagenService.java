@@ -1,7 +1,6 @@
 package com.hotel.proyecto.proyecto_hotel.service.impl;
 
 import com.hotel.proyecto.proyecto_hotel.exception.ListaImagenesVaciaException;
-import com.hotel.proyecto.proyecto_hotel.exception.HabitacionNoEncontradaException;
 import com.hotel.proyecto.proyecto_hotel.exception.TipoImagenIncorrectoException;
 import com.hotel.proyecto.proyecto_hotel.model.Foto;
 import com.hotel.proyecto.proyecto_hotel.model.Habitacion;

@@ -3,8 +3,6 @@ package com.hotel.proyecto.proyecto_hotel.controller;
 import com.hotel.proyecto.proyecto_hotel.dto.request.SaveReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetHistorialReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetReserva;
-import com.hotel.proyecto.proyecto_hotel.exception.FechaLlegadaNoIgualFechaActualException;
-import com.hotel.proyecto.proyecto_hotel.exception.ReservaCruzadaException;
 import com.hotel.proyecto.proyecto_hotel.service.ReservaService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,12 +1,8 @@
 package com.hotel.proyecto.proyecto_hotel.controller;
 
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetUsuario;
-import com.hotel.proyecto.proyecto_hotel.exception.UsuarioLoginClaveErroneaException;
-import com.hotel.proyecto.proyecto_hotel.exception.UsuarioLoginNoEncontradoException;
 import com.hotel.proyecto.proyecto_hotel.service.AuthService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

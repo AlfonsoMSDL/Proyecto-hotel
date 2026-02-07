@@ -2,12 +2,10 @@ package com.hotel.proyecto.proyecto_hotel.controller;
 
 import com.hotel.proyecto.proyecto_hotel.dto.request.UsuarioSave;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetUsuario;
-import com.hotel.proyecto.proyecto_hotel.exception.UsuarioRegistrarCorreoExistenteExcepcion;
 import com.hotel.proyecto.proyecto_hotel.model.enums.Rol;
 import com.hotel.proyecto.proyecto_hotel.service.UsuarioService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
