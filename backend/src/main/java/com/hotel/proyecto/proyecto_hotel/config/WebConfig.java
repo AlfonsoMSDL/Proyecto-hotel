@@ -1,8 +1,13 @@
 package com.hotel.proyecto.proyecto_hotel.config;
 
+import java.util.Locale;
+
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -14,5 +19,13 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:/app/uploads/"); //Esta carpeta esta dentro del contenedor de docker asi que uso la ruta absoluta
 
         //Recordar que todo el proyecto esta dentro de un contenedor docker
+    }
+
+    
+    @Bean
+    public LocaleResolver localeResolver() {
+        SessionLocaleResolver localeResolver = new SessionLocaleResolver();
+        localeResolver.setDefaultLocale(Locale.forLanguageTag("es"));
+        return localeResolver;
     }
 }
