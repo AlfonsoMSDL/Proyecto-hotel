@@ -4,12 +4,17 @@ import com.hotel.proyecto.proyecto_hotel.dto.request.SaveReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetHistorialReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetReserva;
 import com.hotel.proyecto.proyecto_hotel.service.ReservaService;
+
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/reservas")
@@ -18,8 +23,11 @@ public class ReservaController {
     private ReservaService reservaService;
 
     @PostMapping
-    public ResponseEntity<GetReserva> crearReserva(@RequestBody SaveReserva reserva){
+    public ResponseEntity<?> crearReserva(@Valid @RequestBody SaveReserva reserva, BindingResult bindingResult){
 
+        if(bindingResult.hasFieldErrors()){
+            return getErrors(bindingResult);
+        }
         GetReserva reservaGuardada =  reservaService.save(reserva);
         return ResponseEntity.status(HttpStatus.CREATED).body(reservaGuardada);
     }
@@ -64,6 +72,16 @@ public class ReservaController {
 
         reservaService.marcarSalida(idReserva);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    private ResponseEntity<?> getErrors(BindingResult bindingResult) {
+        Map<String,String> errores = new HashMap<>();
+        bindingResult.getFieldErrors()
+        .forEach(err -> {
+            errores.put(err.getField(), "El campo "+err.getField()+" "+err.getDefaultMessage());
+        });
+
+        return ResponseEntity.badRequest().body(errores);
     }
 
 

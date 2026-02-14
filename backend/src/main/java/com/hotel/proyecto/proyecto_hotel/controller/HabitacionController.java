@@ -5,15 +5,20 @@ import com.hotel.proyecto.proyecto_hotel.dto.response.GetFoto;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetHabitacion;
 import com.hotel.proyecto.proyecto_hotel.model.enums.TipoHabitacion;
 import com.hotel.proyecto.proyecto_hotel.service.HabitacionService;
+
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -28,9 +33,13 @@ public class HabitacionController {
     }
 
     @PostMapping
-    public ResponseEntity<GetHabitacion> guardar(
-            @ModelAttribute HabitacionSave habitacionSave,
+    public ResponseEntity<?> guardar( @Valid
+            @ModelAttribute HabitacionSave habitacionSave, BindingResult bindingResult,
             @RequestParam(required = false) List<MultipartFile> imagenes) {
+
+        if(bindingResult.hasFieldErrors()){
+            return getErrors(bindingResult);
+        }
 
         GetHabitacion habitacion = habitacionService.save(habitacionSave, imagenes);
         return ResponseEntity.status(HttpStatus.CREATED).body(habitacion);
@@ -82,5 +91,14 @@ public class HabitacionController {
         return ResponseEntity.ok(habitacionActualizada);
     }
 
+    private ResponseEntity<?> getErrors(BindingResult bindingResult) {
+        Map<String,String> errores = new HashMap<>();
+        bindingResult.getFieldErrors()
+        .forEach(err -> {
+            errores.put(err.getField(), "El campo "+err.getField()+" "+err.getDefaultMessage());
+        });
+
+        return ResponseEntity.badRequest().body(errores);
+    }
 
 }
