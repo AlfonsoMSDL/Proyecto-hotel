@@ -21,7 +21,8 @@ public class WebConfig implements WebMvcConfigurer {
         //Recordar que todo el proyecto esta dentro de un contenedor docker
     }
 
-    
+
+    //Esto lo pongo para que el locale sea el español y bean validation muestre los errores en ese idioma
     @Bean
     public LocaleResolver localeResolver() {
         SessionLocaleResolver localeResolver = new SessionLocaleResolver();
