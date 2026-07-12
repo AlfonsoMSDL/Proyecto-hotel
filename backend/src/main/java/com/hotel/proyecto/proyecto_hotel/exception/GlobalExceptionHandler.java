@@ -21,6 +21,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
     }
 
+
+    @ExceptionHandler(FechasReservaInvalidasException.class)
+    ResponseEntity<?> errorFechasInvalidas(Exception ex) {
+        Map<String,String> errors = new HashMap<>();
+        errors.put("mensaje", "Fechas invalidas.");
+        errors.put("error", ex.getMessage());
+        errors.put("codigo", HttpStatus.BAD_REQUEST.toString());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
     @ExceptionHandler(UsuarioRegistrarCorreoExistenteExcepcion.class)
     ResponseEntity<?> errorCorreoExistente(Exception ex) {
         Map<String,String> errors = new HashMap<>();

@@ -4,6 +4,7 @@ import com.hotel.proyecto.proyecto_hotel.dto.request.SaveReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetHistorialReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetReserva;
 import com.hotel.proyecto.proyecto_hotel.exception.FechaLlegadaNoIgualFechaActualException;
+import com.hotel.proyecto.proyecto_hotel.exception.FechasReservaInvalidasException;
 import com.hotel.proyecto.proyecto_hotel.exception.ReservaCruzadaException;
 import com.hotel.proyecto.proyecto_hotel.mapper.ReservaMapper;
 import com.hotel.proyecto.proyecto_hotel.model.*;
@@ -38,9 +39,13 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Transactional
     @Override
-    public GetReserva save(SaveReserva reserva) throws ReservaCruzadaException{
+    public GetReserva save(SaveReserva reserva) throws ReservaCruzadaException, FechasReservaInvalidasException{
         //Primero mapeo el SaveReserva a una Reserva
         Reserva reservaGuardar = reservaMapper.toReservaFromSaveReserva(reserva);
+        //Comparo que la fecha de salida no sea menor a la fecha de llegada
+        if(reservaGuardar.getFechaLlegada().after(reservaGuardar.getFechaSalida())){
+            throw new FechasReservaInvalidasException("La fecha de salida es menor a la fecha de llegada.");
+        }
         //Busco el usuario para agregarselo a la reserva
         Usuario usuario = usuarioRepository.findById(reserva.idUsuario()).orElse(null);
         log.info("Usuario que va a reservar: "+usuario);
