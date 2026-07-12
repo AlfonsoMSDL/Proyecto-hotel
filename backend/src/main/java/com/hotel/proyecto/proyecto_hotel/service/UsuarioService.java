@@ -6,7 +6,8 @@ import com.hotel.proyecto.proyecto_hotel.model.enums.Rol;
 import java.util.List;
 public interface UsuarioService {
     GetUsuario save(UsuarioSave usuario);
-    GetUsuario  findById(Long id);
+    GetUsuario findById(Long id);
+    GetUsuario findByCorreo(String correo);
     List<GetUsuario> findAll();
     List<GetUsuario> findByRol(Rol rol);
     void deleteById(Long id);

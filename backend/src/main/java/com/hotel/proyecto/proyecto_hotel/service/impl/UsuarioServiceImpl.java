@@ -54,6 +54,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioMapper.toGetUsuario(usuario);
     }
 
+    
+
+    @Override
+    public GetUsuario findByCorreo(String correo) {
+        Usuario usuario = usuarioRepository.findByCorreo(correo).orElse(null);
+        return usuarioMapper.toGetUsuario(usuario);
+    }
+
     @Override
     public List<GetUsuario> findAll() {
         return usuarioMapper.toGetUsuarioList(usuarioRepository.findAll());
