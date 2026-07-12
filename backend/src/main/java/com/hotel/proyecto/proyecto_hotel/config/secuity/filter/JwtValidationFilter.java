@@ -58,8 +58,6 @@ public class JwtValidationFilter extends OncePerRequestFilter{
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(correo,null, authority);
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-            System.out.println(SecurityContextHolder.getContext().getAuthentication());
             chain.doFilter(request, response);
         }catch(JwtException ex){
             Map<String, String> errorBody = new HashMap<>();
