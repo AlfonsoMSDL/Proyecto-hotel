@@ -11,17 +11,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({UsuarioLoginClaveErroneaException.class,UsuarioLoginNoEncontradoException.class})
-    ResponseEntity<?> errorCredencialesIncorrectas(Exception ex) {
-        Map<String,String> errors = new HashMap<>();
-        errors.put("mensaje", "Credenciales incorrectas");
-        errors.put("error", ex.getMessage());
-        errors.put("codigo", HttpStatus.UNAUTHORIZED.toString());
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
-    }
-
-
     @ExceptionHandler(FechasReservaInvalidasException.class)
     ResponseEntity<?> errorFechasInvalidas(Exception ex) {
         Map<String,String> errors = new HashMap<>();
