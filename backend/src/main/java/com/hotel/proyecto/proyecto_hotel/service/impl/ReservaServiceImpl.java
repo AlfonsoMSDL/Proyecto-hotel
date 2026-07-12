@@ -8,12 +8,14 @@ import com.hotel.proyecto.proyecto_hotel.exception.FechasReservaInvalidasExcepti
 import com.hotel.proyecto.proyecto_hotel.exception.ReservaCruzadaException;
 import com.hotel.proyecto.proyecto_hotel.mapper.ReservaMapper;
 import com.hotel.proyecto.proyecto_hotel.model.*;
+import com.hotel.proyecto.proyecto_hotel.model.enums.Rol;
 import com.hotel.proyecto.proyecto_hotel.repository.HabitacionRepository;
 import com.hotel.proyecto.proyecto_hotel.repository.ReservaRepository;
 import com.hotel.proyecto.proyecto_hotel.repository.UsuarioRepository;
 import com.hotel.proyecto.proyecto_hotel.service.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,10 +123,19 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Override
     @Transactional
-    public void cancelarReserva(Long idReserva) {
+    public void cancelarReserva(Long idReserva, String correoSolicitante) {
         //Primero busco la reserva que se va a cancelar
         Reserva reserva = reservaRepository.findById(idReserva).orElse(null);
         log.info("Reserva a cancelar \n{}",reserva);
+
+        //Solo el dueño de la reserva o un administrador pueden cancelarla
+        Usuario solicitante = usuarioRepository.findByCorreo(correoSolicitante).orElse(null);
+        boolean esDueño = reserva.getUsuario().getCorreo().equals(correoSolicitante);
+        boolean esAdministrador = solicitante != null && solicitante.getRol() == Rol.ADMINISTRADOR;
+        if (!esDueño && !esAdministrador) {
+            throw new AccessDeniedException("No tienes permiso para cancelar esta reserva");
+        }
+
         //Luego busco el estado de Cancelada, para crear el estado de la reserva
         EstadoReserva  estadoReserva = estadoReservaService.findByNombre("Cancelada");
         //Luego creo el estado de la reserva para relacionar la reserva con el nuevo estado

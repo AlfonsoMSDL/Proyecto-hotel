@@ -57,8 +57,8 @@ public class ReservaController {
     }
 
     @PutMapping("/cancelar/{id}")
-    public ResponseEntity<Void >cancelarReserva(@PathVariable Long id){
-        reservaService.cancelarReserva(id);
+    public ResponseEntity<Void >cancelarReserva(@PathVariable Long id, @AuthenticationPrincipal String correo){
+        reservaService.cancelarReserva(id, correo);
         return ResponseEntity.noContent().build();
     }
 
