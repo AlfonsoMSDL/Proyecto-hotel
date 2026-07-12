@@ -38,7 +38,7 @@ public class UsuarioController {
 
     
 
-    @PreAuthorize("hasAuthority('CLIENTE') or hasAuthority('ADMINISTRADOR')")
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @GetMapping
     public List<GetUsuario> findAll() {
         return  usuarioService.findAll();
