@@ -34,3 +34,5 @@ build/
 
 ##No subir la carpeta de las imagenes (uploads)
 backend/uploads
+
+backend/.env
