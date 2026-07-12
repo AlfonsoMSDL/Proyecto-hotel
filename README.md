@@ -141,11 +141,11 @@ Implementado:
 - Autorización por rol a nivel de endpoint (`@PreAuthorize`)
 - Verificación de propiedad (ownership) del recurso al crear y cancelar reservas: el usuario se resuelve desde el JWT, no desde datos enviados por el cliente
 - CORS configurado a nivel de aplicación
+- Clave de firma JWT externalizada a variables de entorno (`SECRET_KEY_BACKEND` en `backend/.env`), persiste entre reinicios del backend
 
 Pendiente / mejoras de endurecimiento planeadas:
 
 - Restringir la política de CORS a orígenes concretos en producción
-- Externalizar la clave de firma JWT a variables de entorno (actualmente es válida solo durante la vida del proceso)
 - Revisar el manejo de errores para evitar respuestas 500 genéricas en casos de recurso no encontrado
 - Sanitización adicional en la subida de imágenes de habitaciones
 
@@ -167,7 +167,18 @@ Pendiente / mejoras de endurecimiento planeadas:
 `git clone https://github.com/AlfonsoMSDL/Proyecto-hotel.git`
 - Moverse a la carpeta del proyecto:
 `cd Proyecto-hotel`
-- Configurar las variables de entorno del backend (`backend/.env`, ver `backend/.env` de ejemplo)
+- Crear el archivo `backend/.env` (no se incluye en el repositorio) con las siguientes variables:
+
+  ```env
+  POSTGRES_USER=<usuario_de_postgres>
+  POSTGRES_DB=<nombre_de_la_base_de_datos>
+  POSTGRES_PASSWORD=<contraseña_de_postgres>
+  POSTGRES_HOST=bd
+  SECRET_KEY_BACKEND=<clave_secreta_para_firmar_los_JWT>
+  ```
+
+  `SECRET_KEY_BACKEND` debe ser un string Base64 de al menos 256 bits (32 bytes), por ejemplo generado con:
+  `openssl rand -base64 32`
 - Ejecutar con Docker compose (levanta backend + base de datos):
 `docker compose up --build`
 
