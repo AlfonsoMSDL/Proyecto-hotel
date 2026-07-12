@@ -4,6 +4,7 @@ import com.hotel.proyecto.proyecto_hotel.dto.response.GetFoto;
 import com.hotel.proyecto.proyecto_hotel.service.FotoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class FotoController {
 
     }
 
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFoto(@PathVariable Long id){
 

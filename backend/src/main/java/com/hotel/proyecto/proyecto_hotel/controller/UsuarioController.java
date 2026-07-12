@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,16 +38,19 @@ public class UsuarioController {
 
     
 
+    @PreAuthorize("hasAuthority('CLIENTE') or hasAuthority('ADMINISTRADOR')")
     @GetMapping
     public List<GetUsuario> findAll() {
         return  usuarioService.findAll();
     }
 
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @GetMapping("/byRol/{rol}")
     public List<GetUsuario> findByRol(@PathVariable Rol rol) {
         return  usuarioService.findByRol(rol);
     }
 
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable Long id){
         usuarioService.deleteById(id);
