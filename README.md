@@ -19,7 +19,7 @@ El proyecto busca simular el funcionamiento real de un hotel, cubriendo procesos
 
 ---
 ## 🧱 Arquitectura del sistema
-El sistema está compuesto por tres servicios principales:
+El sistema está pensado con tres servicios:
 
 `Frontend (React)
         |
@@ -27,22 +27,19 @@ Backend (Spring Boot - API REST)
         |
 PostgreSQL (Base de datos)`
 
-Todos los servicios se levantan con un solo comando mediante Docker Compose.
+Por ahora, `docker-compose.yml` levanta **backend + base de datos**; el frontend todavía no forma parte de la orquestación (ver estado más abajo).
 
 ### Backend
 
 - API REST con Spring Boot
 - Persistencia con Spring Data JPA
 - PostgreSQL como base de datos
-- Documentación automática con Swagger
+- Autenticación y autorización con Spring Security + JWT
+- Documentación automática con Swagger / OpenAPI
 
 ### Frontend
 
-- Consumo de la API REST del backend
-- Visualización de habitaciones disponibles
-- Calendario de ocupación
-- Gestión de reservas
-- Interfaz diferenciada para cliente y administrador (en desarrollo)
+- **No iniciado todavía.** La carpeta `frontend/` existe en el repositorio pero está vacía; no hay código, dependencias ni servicio en `docker-compose.yml` para este componente.
 
 ### Base de datos
 - PostgreSQL
@@ -72,15 +69,19 @@ Esto permitió mantener coherencia entre:
 - Java
 - Spring Boot
 - Spring Data JPA
+- Spring Security
+- JWT (jjwt) para autenticación stateless
+- BCrypt para hash de contraseñas
 - PostgreSQL
-- Swagger / OpenAPI
+- Swagger / OpenAPI (springdoc)
+- Bean Validation (Jakarta Validation)
+- MapStruct
 
 ### Frontend
 
-- React
+- React *(planeado, aún no implementado)*
 - JavaScript
 - Axios para consumo de API
-- Docker
 
 ### DevOps
 
@@ -91,10 +92,12 @@ Esto permitió mantener coherencia entre:
 ## ⚙️ Funcionalidades implementadas
 ### 👤 Usuarios y autenticación
 
-- Registro de usuarios con rol de **cliente**
-- Inicio de sesión mediante correo y contraseña
-- Manejo de roles (cliente / admin)
-- Gestión de clientes por parte del administrador
+- Registro de usuarios con rol de **cliente** (`POST /usuarios`, endpoint público)
+- Contraseñas almacenadas con hash BCrypt
+- Inicio de sesión mediante correo y contraseña, con emisión de token **JWT** (`POST /login`)
+- Autorización por rol en los endpoints mediante `@PreAuthorize` (`CLIENTE` / `ADMINISTRADOR`)
+- Sesión sin estado (`STATELESS`): el token se envía en cada petición vía header `Authorization: Bearer <token>`
+- Gestión de clientes por parte del administrador (listar por rol, eliminar)
 
 ### 🏨 Habitaciones
 
@@ -112,53 +115,60 @@ Esto permitió mantener coherencia entre:
 
 - Creación de reservas por parte del cliente para un rango de fechas válido
 - Validación de fechas para garantizar que no se crucen reservas existentes
-- Visualización de un calendario de ocupación por habitación, bloqueando fechas no disponibles
 - Búsqueda de reservas por:
   - Nombre del cliente
   - Nombre del cliente y habitación reservada
-- Cancelación de reservas por parte del cliente
+- Cancelación de reservas
 - Manejo de estados de la reserva:
   - Confirmada
   - Cancelada
   - Completada
-- Marcado de entrada del cliente (actualiza el estado de la habitación a ocupada)
-- Marcado de salida del cliente y actualización de la reserva a **Completada**
-- Visualización del historial de reservas del cliente (confirmadas, canceladas y completadas)
+- Marcado de entrada del cliente (actualiza el estado de la habitación a ocupada) — solo administrador
+- Marcado de salida del cliente y actualización de la reserva a **Completada** — solo administrador
+- Visualización del historial de reservas del cliente autenticado (confirmadas, canceladas y completadas)
 
 ### 📄 Documentación
 
-- Documentación de la API disponible mediante **Swagger**
+- Documentación de la API disponible mediante **Swagger**, con soporte de autenticación Bearer (JWT) integrado en la UI
 
 ---
-## 🔐 Seguridad (En desarrollo)
-Actualmente:
-- Autenticación básica implementada
+## 🔐 Seguridad
 
-Pendiente:
+Implementado:
 
-- Implementación de Spring Security
-- Autenticación con JWT
-- Control de acceso por rol a endpoints
-- Protección de rutas en frontend
+- Spring Security + JWT (firma HS256) para autenticación stateless
+- Contraseñas con hash BCrypt (no se almacenan en texto plano)
+- Autorización por rol a nivel de endpoint (`@PreAuthorize`)
+- Verificación de propiedad (ownership) del recurso al crear y cancelar reservas: el usuario se resuelve desde el JWT, no desde datos enviados por el cliente
+- CORS configurado a nivel de aplicación
+
+Pendiente / mejoras de endurecimiento planeadas:
+
+- Restringir la política de CORS a orígenes concretos en producción
+- Externalizar la clave de firma JWT a variables de entorno (actualmente es válida solo durante la vida del proceso)
+- Revisar el manejo de errores para evitar respuestas 500 genéricas en casos de recurso no encontrado
+- Sanitización adicional en la subida de imágenes de habitaciones
 
 ---
 ## 💳 Próximas funcionalidades
 
+- Desarrollo del frontend en React
 - Integración de pasarela de pagos
 - Envío de notificaciones (correo)
 - Despliegue en AWS
 - Separación de perfiles dev/prod
 - CI/CD
-- Mejoras en UI/UX del frontend
+- Incorporar el frontend a `docker-compose.yml`
 
 ---
 ## ▶️ Ejecución del proyecto
 
 - Clonar el repositorio:
-`git clone https://github.com/AlfonsoMSDL/Proyecto-hotel-backend.git`
+`git clone https://github.com/AlfonsoMSDL/Proyecto-hotel.git`
 - Moverse a la carpeta del proyecto:
-`cd Proyecto-hotel-backend`
-- Ejecutar con Docker compose:
+`cd Proyecto-hotel`
+- Configurar las variables de entorno del backend (`backend/.env`, ver `backend/.env` de ejemplo)
+- Ejecutar con Docker compose (levanta backend + base de datos):
 `docker compose up --build`
 
 ---
@@ -167,9 +177,11 @@ Una vez el proyecto esté en ejecución, la documentación de los endpoints est�
 
 `http://localhost:8181/hotel/api/swagger-ui/index.html`
 
+Para probar endpoints protegidos desde Swagger: iniciar sesión en `POST /hotel/api/login`, copiar el token devuelto y pegarlo en el botón **Authorize** (esquema `bearerAuth`) de la interfaz.
+
 ---
 ## 📌 Estado del proyecto
 
 **🚧 En desarrollo**
 
-El proyecto continúa evolucionando, incorporando nuevas funcionalidades y mejoras conforme avanza su implementación.
+El backend cubre gestión de usuarios, habitaciones, reservas y autenticación/autorización con Spring Security + JWT. El frontend aún no se ha iniciado. El proyecto continúa evolucionando conforme avanza su implementación.
