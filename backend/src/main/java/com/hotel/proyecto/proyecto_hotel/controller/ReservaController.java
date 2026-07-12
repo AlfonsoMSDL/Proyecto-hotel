@@ -3,12 +3,16 @@ package com.hotel.proyecto.proyecto_hotel.controller;
 import com.hotel.proyecto.proyecto_hotel.dto.request.SaveReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetHistorialReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetReserva;
+import com.hotel.proyecto.proyecto_hotel.dto.response.GetUsuario;
 import com.hotel.proyecto.proyecto_hotel.service.ReservaService;
+import com.hotel.proyecto.proyecto_hotel.service.UsuarioService;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +25,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class ReservaController {
     private ReservaService reservaService;
+    private UsuarioService usuarioService;
 
     @PostMapping
     public ResponseEntity<?> crearReserva(@Valid @RequestBody SaveReserva reserva, BindingResult bindingResult){
@@ -39,9 +44,13 @@ public class ReservaController {
     }
 
     @GetMapping("/mis_reservas")
-    public ResponseEntity<List<GetHistorialReserva>> historialReservasPorUsuarioYEstadoReserva(@RequestParam Long idUsuario, @RequestParam String estado){
+    public ResponseEntity<?> historialReservasPorUsuarioYEstadoReserva(@AuthenticationPrincipal String correo, @RequestParam String estado){
 
-        List<GetHistorialReserva> historialReservas = reservaService.historialReservasPorUsuarioYEstadoReserva(idUsuario,estado);
+        System.out.println("Correo: "+correo);
+
+        GetUsuario usuario = usuarioService.findByCorreo(correo);
+
+        List<GetHistorialReserva> historialReservas = reservaService.historialReservasPorUsuarioYEstadoReserva(usuario.id(),estado);
 
         return ResponseEntity.ok(historialReservas);
     }
@@ -60,6 +69,7 @@ public class ReservaController {
         return ResponseEntity.ok(reservas);
     }
 
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @PostMapping("/marcar-entrada/{idReserva}")
     public ResponseEntity<?> marcarEntrada(@PathVariable Long idReserva){
 
@@ -67,6 +77,7 @@ public class ReservaController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @PostMapping("/marcar-salida/{idReserva}")
     public ResponseEntity<?> marcarSalida(@PathVariable Long idReserva){
 
