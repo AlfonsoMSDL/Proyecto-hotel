@@ -28,12 +28,13 @@ public class ReservaController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    public ResponseEntity<?> crearReserva(@Valid @RequestBody SaveReserva reserva, BindingResult bindingResult){
+    public ResponseEntity<?> crearReserva(@Valid @RequestBody SaveReserva reserva, BindingResult bindingResult, @AuthenticationPrincipal String correo){
 
         if(bindingResult.hasFieldErrors()){
             return getErrors(bindingResult);
         }
-        GetReserva reservaGuardada =  reservaService.save(reserva);
+        GetUsuario usuario = usuarioService.findByCorreo(correo);
+        GetReserva reservaGuardada =  reservaService.save(reserva, usuario.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(reservaGuardada);
     }
 

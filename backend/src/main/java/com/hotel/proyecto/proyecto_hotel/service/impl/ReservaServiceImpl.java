@@ -39,15 +39,15 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Transactional
     @Override
-    public GetReserva save(SaveReserva reserva) throws ReservaCruzadaException, FechasReservaInvalidasException{
+    public GetReserva save(SaveReserva reserva, Long idUsuario) throws ReservaCruzadaException, FechasReservaInvalidasException{
         //Primero mapeo el SaveReserva a una Reserva
         Reserva reservaGuardar = reservaMapper.toReservaFromSaveReserva(reserva);
         //Comparo que la fecha de salida no sea menor a la fecha de llegada
         if(reservaGuardar.getFechaLlegada().after(reservaGuardar.getFechaSalida())){
             throw new FechasReservaInvalidasException("La fecha de salida es menor a la fecha de llegada.");
         }
-        //Busco el usuario para agregarselo a la reserva
-        Usuario usuario = usuarioRepository.findById(reserva.idUsuario()).orElse(null);
+        //Busco el usuario para agregarselo a la reserva (el usuario autenticado, no uno enviado por el cliente)
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
         log.info("Usuario que va a reservar: "+usuario);
         //Le agrego el usuario a la reserva
         reservaGuardar.setUsuario(usuario);

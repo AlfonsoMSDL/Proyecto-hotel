@@ -8,8 +8,6 @@ public record SaveReserva(
         @NotNull
         Long idHabitacion,
         @NotNull
-        Long idUsuario,
-        @NotNull
         Timestamp fechaLlegada,
         @NotNull
         Timestamp fechaSalida

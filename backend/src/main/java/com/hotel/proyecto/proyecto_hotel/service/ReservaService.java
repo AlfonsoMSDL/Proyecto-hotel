@@ -7,7 +7,7 @@ import com.hotel.proyecto.proyecto_hotel.model.Reserva;
 import java.util.List;
 
 public interface ReservaService {
-    GetReserva save(SaveReserva reserva);
+    GetReserva save(SaveReserva reserva, Long idUsuario);
     Reserva  findById(Long id);
     List<GetReserva> buscarReservasConfirmadasPorHabitacion(Long idHabitacion);
     List<GetHistorialReserva> historialReservasPorUsuarioYEstadoReserva(Long idUsuario,String estado);
