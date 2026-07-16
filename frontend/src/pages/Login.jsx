@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useTheme } from '../context/ThemeContext.jsx';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2'
 
@@ -9,6 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,7 +21,7 @@ export default function Login() {
       localStorage.setItem('token', token);
 
       await Swal.fire({
-        theme: 'auto',
+        theme: theme,
         position: "center",
         icon: "success",
         title: "Bienvenido",

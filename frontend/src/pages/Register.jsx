@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import Swal from 'sweetalert2'
+import { useTheme } from '../context/ThemeContext.jsx';
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', lastName: '', email: '', phone: '', password: '' });
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { register } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -15,7 +18,16 @@ export default function Register() {
     e.preventDefault();
     try {
       const usuarioGuardado = await register(form);
-      console.log(usuarioGuardado);
+
+      await Swal.fire({
+        theme: theme,
+        position: "center",
+        icon: "success",
+        title: "Bienvenido",
+        showConfirmButton: false,
+        timer: 1500
+      });
+
       navigate('/login');
     } catch (err) {
       setError(err.message || 'No se pudo crear la cuenta.');
