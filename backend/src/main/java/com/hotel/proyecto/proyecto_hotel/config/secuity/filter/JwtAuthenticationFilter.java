@@ -18,6 +18,8 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hotel.proyecto.proyecto_hotel.dto.request.UsuarioLogin;
+import com.hotel.proyecto.proyecto_hotel.dto.response.GetUsuario;
+import com.hotel.proyecto.proyecto_hotel.service.UsuarioService;
 
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
@@ -26,15 +28,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 
-
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private AuthenticationManager authenticationManager;
+    private UsuarioService usuarioService;
 
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager,UsuarioService usuarioService) {
         
         this.authenticationManager = authenticationManager;
+        this.usuarioService = usuarioService;
     }
 
     @Override
@@ -70,6 +73,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         User user = (User) authResult.getPrincipal();
         String correo = user.getUsername();
+
+        GetUsuario usuario=  usuarioService.findByCorreo(correo);
         
 
         //Como un usuario solo puede tener un rol, va a obtener un solo rol en las authorities
@@ -82,6 +87,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String token = Jwts.builder()
         .subject(correo)
         .claim("authority",rol)
+        .claim("fullName",usuario.nombre()+" "+usuario.apellido())
+        .claim("id", usuario.id())
         .signWith(TokenJwtConfig.SECRET_KEY)
         .expiration(new Date(System.currentTimeMillis() + 300000))
         .compact();
@@ -91,6 +98,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Map<String,String> body = new HashMap<>();
         body.put("token", token);
         body.put("correo", correo);
+        body.put("fullName", usuario.nombre()+" "+usuario.apellido());
         body.put("mensaje",String.format("Bienvenido %s",correo));
 
 

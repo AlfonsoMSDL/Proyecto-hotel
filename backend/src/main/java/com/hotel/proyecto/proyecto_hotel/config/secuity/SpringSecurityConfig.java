@@ -22,6 +22,7 @@ import org.springframework.web.filter.CorsFilter;
 
 import com.hotel.proyecto.proyecto_hotel.config.secuity.filter.JwtAuthenticationFilter;
 import com.hotel.proyecto.proyecto_hotel.config.secuity.filter.JwtValidationFilter;
+import com.hotel.proyecto.proyecto_hotel.service.UsuarioService;
 
 import lombok.AllArgsConstructor;
 
@@ -30,7 +31,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class SpringSecurityConfig {
 
-    private AuthenticationConfiguration authenticationConfiguration;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
 
     @Bean
@@ -44,19 +45,31 @@ public class SpringSecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity httpSecurity){
-        return httpSecurity.authorizeHttpRequests(authz -> 
-            authz.requestMatchers(HttpMethod.POST,"/usuarios").permitAll().
-            requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-ui.html").permitAll().
-            anyRequest().authenticated()).
-            addFilter(new JwtAuthenticationFilter(getAuthenticationManager())).
-            addFilterBefore(new JwtValidationFilter(),UsernamePasswordAuthenticationFilter.class).
-            csrf(config -> config.disable()).
-            cors(cors -> cors.configurationSource(corsConfigurationSource())).
-            sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).
-            build();
-        
-    } 
+    SecurityFilterChain filterChain(HttpSecurity httpSecurity, AuthenticationManager authenticationManager, UsuarioService usuarioService) throws Exception {
+
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(
+                        authenticationManager, usuarioService);
+
+
+        return httpSecurity
+                .authorizeHttpRequests(authz ->
+                    authz
+                        .requestMatchers(HttpMethod.POST,"/usuarios").permitAll()
+                        .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-ui.html").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilter(jwtAuthenticationFilter)
+                .addFilterBefore(
+                        new JwtValidationFilter(),
+                        UsernamePasswordAuthenticationFilter.class
+                )
+                .csrf(config -> config.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(management ->
+                        management.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .build();
+    }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
