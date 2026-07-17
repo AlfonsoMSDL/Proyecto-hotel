@@ -8,6 +8,7 @@ import MyBookings from './pages/MyBookings.jsx';
 import AdminRooms from './pages/admin/AdminRooms.jsx';
 import AdminRoomForm from './pages/admin/AdminRoomForm.jsx';
 import AdminBookings from './pages/admin/AdminBookings.jsx';
+import AdminUsers from './pages/admin/AdminUsers.jsx';
 import SecurityRoute from './components/SecurityRoute.jsx';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/admin/habitaciones/nueva" element={<AdminRoomForm />} />
         <Route path="/admin/habitaciones/:id" element={<AdminRoomForm />} />
         <Route path="/admin/reservas" element={<AdminBookings />} />
+        <Route path="/admin/usuarios" element={<AdminUsers />} />
       </Route>
     </Routes>
   );
