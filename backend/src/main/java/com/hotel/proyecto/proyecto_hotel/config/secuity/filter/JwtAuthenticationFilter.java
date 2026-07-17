@@ -90,7 +90,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         .claim("fullName",usuario.nombre()+" "+usuario.apellido())
         .claim("id", usuario.id())
         .signWith(TokenJwtConfig.SECRET_KEY)
-        .expiration(new Date(System.currentTimeMillis() + 300000))
+        .expiration(new Date(System.currentTimeMillis() + 900000))
         .compact();
     
         response.setHeader(TokenJwtConfig.HEADER_AUTHORIZATION, TokenJwtConfig.PREFIX_BEARER+token);
