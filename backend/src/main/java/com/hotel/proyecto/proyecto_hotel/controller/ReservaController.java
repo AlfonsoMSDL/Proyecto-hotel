@@ -62,10 +62,10 @@ public class ReservaController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/clientes/{nombreCompleto}/habitaciones/{numHabitacion}")
+    @GetMapping("/clientes/{nombreCompleto}")
     public ResponseEntity<List<GetReserva>> buscarReservasDeClienteDadoNumHabitacion(@PathVariable String nombreCompleto, @PathVariable Integer numHabitacion){
 
-        List<GetReserva> reservas = reservaService.buscarReservasDeClienteDadoNumHabitacion(nombreCompleto, numHabitacion);
+        List<GetReserva> reservas = reservaService.buscarReservasDeClienteDadoNombreCompleto(nombreCompleto);
 
         return ResponseEntity.ok(reservas);
     }

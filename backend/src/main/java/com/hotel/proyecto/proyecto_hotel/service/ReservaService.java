@@ -12,7 +12,7 @@ public interface ReservaService {
     List<GetReserva> buscarReservasConfirmadasPorHabitacion(Long idHabitacion);
     List<GetHistorialReserva> historialReservasPorUsuarioYEstadoReserva(Long idUsuario,String estado);
     void cancelarReserva(Long idReserva, String correoSolicitante);
-    List<GetReserva> buscarReservasDeClienteDadoNumHabitacion(String nombreCompleto, int numHabitacion);
+    List<GetReserva> buscarReservasDeClienteDadoNombreCompleto(String nombreCompleto);
 
     void marcarEntrada(Long idReserva);
 

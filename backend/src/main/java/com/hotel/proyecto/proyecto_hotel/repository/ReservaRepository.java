@@ -50,7 +50,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
             @Param("estado") String estado
     );
 
-    //Consulta para buscar las reservas actuales de una habitacion especifica de un cliente dado su nombre y el numero de la habitacion
+    //Consulta para buscar las reservas actuales de un cliente dado su nombre 
     @Query("""
     SELECT r FROM Reserva r
         JOIN r.usuario c
@@ -59,11 +59,10 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
         JOIN edlr.estadoReserva er
     WHERE REPLACE(LOWER(CONCAT(c.nombre, c.apellido)), ' ', '')
           LIKE REPLACE(LOWER(CONCAT('%', :nombreCompleto, '%')), ' ', '')
-      AND h.numero = :numHabitacion
       AND edlr.fechaFin IS NULL
       AND er.nombre = 'Confirmada'
     """)
-    List<Reserva> buscarReservasDeClienteDadoNumHabitacion(@Param("nombreCompleto") String nombreCompleto,@Param("numHabitacion") int numHabitacion);
+    List<Reserva> buscarReservasDeClienteDadoNombreCompleto(@Param("nombreCompleto") String nombreCompleto);
 
 
 }

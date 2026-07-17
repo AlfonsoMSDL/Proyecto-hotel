@@ -166,8 +166,8 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
-    public List<GetReserva> buscarReservasDeClienteDadoNumHabitacion(String nombreCompleto, int numHabitacion) {
-        List<Reserva> reservas = reservaRepository.buscarReservasDeClienteDadoNumHabitacion(nombreCompleto, numHabitacion);
+    public List<GetReserva> buscarReservasDeClienteDadoNombreCompleto(String nombreCompleto) {
+        List<Reserva> reservas = reservaRepository.buscarReservasDeClienteDadoNombreCompleto(nombreCompleto);
         return reservaMapper.toGetReservaList(reservas);
     }
 
