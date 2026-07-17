@@ -63,7 +63,7 @@ public class ReservaController {
     }
 
     @GetMapping("/clientes/{nombreCompleto}")
-    public ResponseEntity<List<GetReserva>> buscarReservasDeClienteDadoNumHabitacion(@PathVariable String nombreCompleto, @PathVariable Integer numHabitacion){
+    public ResponseEntity<List<GetReserva>> buscarReservasDeClienteDadoNombreCompleto(@PathVariable String nombreCompleto){
 
         List<GetReserva> reservas = reservaService.buscarReservasDeClienteDadoNombreCompleto(nombreCompleto);
 
