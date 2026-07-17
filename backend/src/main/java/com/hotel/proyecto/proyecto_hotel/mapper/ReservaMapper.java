@@ -12,7 +12,7 @@ import java.util.List;
 public interface ReservaMapper {
     Reserva toReservaFromSaveReserva(SaveReserva reserva);
 
-    @Mapping(source = "habitacion.id", target = "idHabitacion")
+    @Mapping(source = "habitacion.numero", target = "numHabitacion")
     @Mapping(source = "usuario.id", target = "idUsuario")
     GetReserva toGetReserva(Reserva reserva);
 

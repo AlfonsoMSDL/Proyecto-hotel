@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 public record GetReserva(
         Long id,
-        Long idHabitacion,
+        int numHabitacion,
         Long idUsuario,
         Timestamp fechaLlegada,
         Timestamp fechaSalida
