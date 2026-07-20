@@ -1,8 +1,9 @@
 const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
 
-export async function fetchUsers() {
+export async function fetchUsers(page = 0) {
   const token = localStorage.getItem('token');
-  const res = await fetch(`${BACKEND_URL_BASE}/usuarios`, {
+  const params = new URLSearchParams({ page: String(page), size: '5' });
+  const res = await fetch(`${BACKEND_URL_BASE}/usuarios?${params.toString()}`, {
     headers: {
       'Authorization': token ? `Bearer ${token}` : undefined,
       'Content-Type': 'application/json'
