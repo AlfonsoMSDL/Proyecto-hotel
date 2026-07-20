@@ -5,8 +5,7 @@ export async function fetchUsers(page = 0) {
   const params = new URLSearchParams({ page: String(page), size: '5' });
   const res = await fetch(`${BACKEND_URL_BASE}/usuarios?${params.toString()}`, {
     headers: {
-      'Authorization': token ? `Bearer ${token}` : undefined,
-      'Content-Type': 'application/json'
+      'Authorization': token ? `Bearer ${token}` : undefined
     }
   });
   if (!res.ok) {
