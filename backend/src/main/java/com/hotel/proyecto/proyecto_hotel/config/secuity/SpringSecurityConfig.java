@@ -56,6 +56,7 @@ public class SpringSecurityConfig {
                     authz
                         .requestMatchers(HttpMethod.POST,"/usuarios").permitAll()
                         .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/habitaciones").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilter(jwtAuthenticationFilter)
