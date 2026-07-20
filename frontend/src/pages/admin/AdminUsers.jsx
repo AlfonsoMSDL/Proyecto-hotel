@@ -8,16 +8,22 @@ import Swal from 'sweetalert2';
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [reservasTarget, setReservasTarget] = useState(null);
   const [reservas, setReservas] = useState([]);
   const [loadingReservas, setLoadingReservas] = useState(false);
   const { theme } = useTheme();
 
-  const load = async () => {
+  const load = async (pageNumber = 0) => {
     setLoading(true);
     try {
-      const data = await fetchUsers();
-      setUsers(data);
+      const data = await fetchUsers(pageNumber);
+      setUsers(Array.isArray(data.content) ? data.content : data);
+      setPage(typeof data.number === 'number' ? data.number : pageNumber);
+      setTotalPages(typeof data.totalPages === 'number' ? data.totalPages : 1);
+      setTotalElements(typeof data.totalElements === 'number' ? data.totalElements : (Array.isArray(data) ? data.length : 0));
     } catch (err) {
       console.error(err);
       Swal.fire({ theme, icon: 'error', title: 'Error', text: err.message || 'No se pudo cargar usuarios' });
@@ -26,7 +32,7 @@ export default function AdminUsers() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(page); }, [page]);
 
   const handleDelete = async (user) => {
     const result = await Swal.fire({
@@ -43,7 +49,7 @@ export default function AdminUsers() {
       try {
         await deleteUser(user.id);
         await Swal.fire({ theme, icon: 'success', title: 'Eliminado', timer: 1200, showConfirmButton: false });
-        load();
+        load(page);
       } catch (err) {
         console.error(err);
         Swal.fire({ theme, icon: 'error', title: 'Error', text: err.message || 'No se pudo eliminar' });
@@ -129,6 +135,27 @@ export default function AdminUsers() {
             )}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ opacity: 0.75, fontSize: 14 }}>
+              Mostrando {users.length} de {totalElements} usuarios · Página {page + 1} de {totalPages}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button className="btn btn-secondary" disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index}
+                  className={index === page ? 'btn btn-primary' : 'btn btn-secondary'}
+                  style={{ minWidth: 40 }}
+                  onClick={() => setPage(index)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button className="btn btn-secondary" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>Siguiente</button>
+            </div>
+          </div>
+        )}
       </div>
 
       {reservasTarget && (
