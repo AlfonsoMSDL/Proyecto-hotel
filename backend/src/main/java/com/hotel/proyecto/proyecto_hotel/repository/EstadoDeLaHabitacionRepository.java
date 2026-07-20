@@ -11,4 +11,8 @@ public interface EstadoDeLaHabitacionRepository extends JpaRepository<EstadoDeLa
 
     //Esta consulta la voy a usar para traer el estado actual de una habitacion especifica con un estado en especifico
     EstadoDeLaHabitacion findByHabitacionAndEstadoHabitacionAndFechaFinIsNull(Habitacion habitacion, EstadoHabitacion estadoHabitacion);
+
+    //Esta consulta la voy a usar para traer el estado actual de una habitacion especifica
+    EstadoDeLaHabitacion findByHabitacionAndFechaFinIsNull(Habitacion habitacion);
+
 }

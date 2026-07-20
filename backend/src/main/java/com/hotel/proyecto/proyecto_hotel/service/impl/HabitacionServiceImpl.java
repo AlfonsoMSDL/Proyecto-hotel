@@ -22,6 +22,9 @@ import com.hotel.proyecto.proyecto_hotel.service.HabitacionService;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -130,10 +133,22 @@ public class HabitacionServiceImpl implements HabitacionService {
     }
 
     @Override
-    public List<GetHabitacion> findAll() {
-        List<Habitacion> habitaciones = habitacionRepository.findAll();
+    public Page<GetHabitacion> findAll(Pageable pageable) {
+        Page<Habitacion> habitaciones = habitacionRepository.findAll(pageable);
 
-        return habitacionMapper.toGetHabitacionList(habitaciones);
+        return habitaciones.map(hab -> {
+            //Busco el estado actual de esa habitacion
+            EstadoDeLaHabitacion estadoDeLaHabitacion = estadoDeLaHabitacionService.findByHabitacionAndFechaFinIsNull(hab);
+
+            //mapeo la habitacion a un GetHabitacion
+            GetHabitacion getHabitacion = habitacionMapper.toGetHabitacion(hab);
+
+            //El unico parametro que el mapper no puso en el GetHabitacion fue el del estado actual, eso lo hare yo manualmente
+            getHabitacion.setEstadoActual(estadoDeLaHabitacion.getEstadoHabitacion().getNombre());
+
+            //Ahora si ya esta toda la info necesaria para devolver el dto
+            return getHabitacion;
+        });
     }
 
     @Override

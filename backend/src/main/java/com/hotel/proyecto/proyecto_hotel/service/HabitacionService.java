@@ -5,6 +5,10 @@ import com.hotel.proyecto.proyecto_hotel.dto.response.GetFoto;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetHabitacion;
 import com.hotel.proyecto.proyecto_hotel.model.Habitacion;
 import com.hotel.proyecto.proyecto_hotel.model.enums.TipoHabitacion;
+
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
@@ -15,7 +19,7 @@ public interface HabitacionService {
     Habitacion  findById(Long id);
     void deleteById(Long id);
     boolean existePorId(Long id);
-    List<GetHabitacion> findAll();
+    Page<GetHabitacion> findAll(Pageable pageable);
     List<GetHabitacion> filtrarPorTipoHabitacion(TipoHabitacion tipo);
     List<GetHabitacion> filtrarPorRangoDePrecio(Double precioMinimo, Double precioMaximo);
     List<GetHabitacion> filtrarPorDisponibilidadDeFechas(Timestamp fechaLlegada, Timestamp fechaSalida);

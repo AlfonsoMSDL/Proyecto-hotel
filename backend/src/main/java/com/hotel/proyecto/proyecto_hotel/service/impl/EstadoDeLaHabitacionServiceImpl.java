@@ -27,4 +27,9 @@ public class EstadoDeLaHabitacionServiceImpl implements EstadoDeLaHabitacionServ
     public EstadoDeLaHabitacion findByHabitacionAndEstadoHabitacionAndFechaFinIsNull(Habitacion habitacion, EstadoHabitacion estadoHabitacion) {
         return estadoDeLaHabitacionRepository.findByHabitacionAndEstadoHabitacionAndFechaFinIsNull(habitacion,estadoHabitacion);
     }
+
+    @Override
+    public EstadoDeLaHabitacion findByHabitacionAndFechaFinIsNull(Habitacion habitacion){
+        return estadoDeLaHabitacionRepository.findByHabitacionAndFechaFinIsNull(habitacion);
+    }
 }

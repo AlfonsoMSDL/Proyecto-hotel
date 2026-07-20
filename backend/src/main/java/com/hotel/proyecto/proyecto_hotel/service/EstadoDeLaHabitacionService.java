@@ -9,4 +9,6 @@ public interface EstadoDeLaHabitacionService {
     EstadoDeLaHabitacion  findById(Long id);
 
     EstadoDeLaHabitacion findByHabitacionAndEstadoHabitacionAndFechaFinIsNull(Habitacion habitacion, EstadoHabitacion estadoHabitacion);
+
+    EstadoDeLaHabitacion findByHabitacionAndFechaFinIsNull(Habitacion habitacion);
 }
