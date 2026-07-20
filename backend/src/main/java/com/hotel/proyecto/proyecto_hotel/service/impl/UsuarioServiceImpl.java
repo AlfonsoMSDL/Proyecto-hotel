@@ -10,6 +10,8 @@ import com.hotel.proyecto.proyecto_hotel.repository.UsuarioRepository;
 import com.hotel.proyecto.proyecto_hotel.service.UsuarioService;
 import lombok.AllArgsConstructor;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -63,8 +65,12 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public List<GetUsuario> findAll() {
-        return usuarioMapper.toGetUsuarioList(usuarioRepository.findAll());
+    public Page<GetUsuario> findAll(Pageable pageable) {
+
+        Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
+
+
+        return usuarios.map(usuarioMapper::toGetUsuario);
     }
 
     @Override
@@ -76,6 +82,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void deleteById(Long id) {
         usuarioRepository.deleteById(id);
     }
+
 
 
 }

@@ -8,6 +8,9 @@ import com.hotel.proyecto.proyecto_hotel.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,8 +43,8 @@ public class UsuarioController {
 
     @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @GetMapping
-    public List<GetUsuario> findAll() {
-        return  usuarioService.findAll();
+    public Page<GetUsuario> findAll(Pageable pageable) {
+        return usuarioService.findAll(pageable);
     }
 
     @PreAuthorize("hasAuthority('ADMINISTRADOR')")
