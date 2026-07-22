@@ -180,12 +180,14 @@ public class ReservaServiceImpl implements ReservaService {
         //Busco la reserva que se va a marcar
         Reserva reserva = reservaRepository.findById(idReserva).orElse(null);
         log.info("Reserva a marcar entrada {}",reserva);
-        Date fechaActual = Date.valueOf(LocalDate.now());
-        Date fechaLlegada = new Date(reserva.getFechaLlegada().getTime());
-        log.debug("Fecha de llegada {}",fechaLlegada);
-        log.debug("Fecha de actual {}",fechaActual);
+        LocalDate fechaActual = LocalDate.now();
+        LocalDate fechaLlegada = reserva.getFechaLlegada()
+                                        .toLocalDateTime()
+                                        .toLocalDate();
+        log.info("Fecha de llegada {}",fechaLlegada);
+        log.info("Fecha de actual {}",fechaActual);
 
-        if(fechaActual.compareTo(fechaLlegada)!=0){
+        if(!fechaActual.equals(fechaLlegada)){
             log.info("La fecha de llegada debe ser igual a la fecha actual para que se pueda marcar la entrada.");
             throw new FechaLlegadaNoIgualFechaActualException("La fecha de llegada debe ser igual a la fecha actual para que se pueda marcar la entrada.");
         }
