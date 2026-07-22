@@ -17,9 +17,13 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     se cruzan con las fechas de otra reserva ya existente de la misma habitacion*/
     @Query("""
             SELECT r FROM Reserva r
-                WHERE r.habitacion.id = :idHabitacion 
+                JOIN r.estadosDeLaReserva edlr
+                JOIN edlr.estadoReserva er
+            WHERE r.habitacion.id = :idHabitacion 
                 AND r.fechaLlegada  < :fechaSalida 
                 AND r.fechaSalida > :fechaLlegada
+                AND er.nombre = 'Confirmada'
+                AND edlr.fechaFin IS NULL
     """)
     Optional<Reserva> encontrarReservaCruzada(Long idHabitacion, Timestamp fechaLlegada, Timestamp fechaSalida);
 
