@@ -37,6 +37,11 @@ public class HabitacionController {
         return ResponseEntity.ok(habitacionService.findAll(pageable));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(habitacionService.findById(id));
+    }
+
     @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @PostMapping
     public ResponseEntity<?> guardar( @Valid
