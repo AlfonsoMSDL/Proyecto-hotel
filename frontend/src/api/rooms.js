@@ -2,9 +2,13 @@
 import { rooms } from '../data/mockData.js';
 const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
 
-export async function fetchRooms(page) {
-  const params = new URLSearchParams({ page: String(page), size: '5' });
-  const response = await fetch(BACKEND_URL_BASE+'/habitaciones?'+params.toString());
+export async function fetchRooms(page = 0, size = 5) {
+  const params = new URLSearchParams({ page: String(page), size: String(size) });
+  const response = await fetch(BACKEND_URL_BASE + '/habitaciones?' + params.toString());
+  if (!response.ok) {
+    const txt = await response.text();
+    throw new Error(txt || 'Error al obtener habitaciones');
+  }
   return response.json();
 }
 
