@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNav from '../../components/AdminNav.jsx';
-import Modal from '../../components/Modal.jsx';
+import Swal from 'sweetalert2';
 import { fetchRooms, deleteRoom } from '../../api/rooms.js';
 
 const statusTag = {
@@ -10,15 +10,12 @@ const statusTag = {
   Mantenimiento: 'tag tag-outline',
 };
 
-const PAGE_SIZE = 5;
-
 export default function AdminRooms() {
   const [rooms, setRooms] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
   const navigate = useNavigate();
 
   const load = async (pageNumber = 0) => {
@@ -41,16 +38,35 @@ export default function AdminRooms() {
     load(page);
   }, [page]);
 
-  const confirmDelete = async () => {
-    await deleteRoom(deleteTarget.id);
-    setDeleteTarget(null);
+  const confirmDeleteRoom = async (room) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Ojo: no se puede revertir y las reservas asociadas serán eliminadas.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar'
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    await deleteRoom(room.id);
+    await Swal.fire({
+      title: 'Eliminado!',
+      text: 'La habitación ha sido eliminada.',
+      icon: 'success'
+    });
+
     load(page);
   };
 
   return (
     <div style={{ position: 'relative' }}>
       <AdminNav />
-      <div style={{ filter: deleteTarget ? 'blur(1px)' : undefined, opacity: deleteTarget ? 0.6 : 1, padding: '36px 40px 60px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+      <div style={{ padding: '36px 40px 60px', display: 'flex', flexDirection: 'column', gap: 22 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <h1 style={{ margin: 0 }}>Habitaciones</h1>
@@ -85,7 +101,7 @@ export default function AdminRooms() {
                   <td><span className={statusTag[room.estadoActual] || 'tag tag-neutral'}>{room.estadoActual}</span></td>
                   <td style={{ textAlign: 'left' }}>
                     <button className="btn btn-ghost" onClick={() => navigate(`/admin/habitaciones/${room.id}`)}>Editar</button>{' '}
-                    <button className="btn btn-ghost" style={{ color: '#e07a7a' }} onClick={() => setDeleteTarget(room)}>Eliminar</button>
+                    <button className="btn btn-ghost" style={{ color: '#e07a7a' }} onClick={() => confirmDeleteRoom(room)}>Eliminar</button>
                   </td>
                 </tr>
               ))
@@ -116,20 +132,6 @@ export default function AdminRooms() {
         )}
       </div>
 
-      {deleteTarget && (
-        <Modal
-          title="Eliminar habitación"
-          onClose={() => setDeleteTarget(null)}
-          actions={
-            <>
-              <button className="btn btn-secondary" onClick={() => setDeleteTarget(null)}>Cancelar</button>
-              <button className="btn btn-primary" style={{ borderColor: '#e07a7a', color: '#e07a7a' }} onClick={confirmDelete}>Eliminar</button>
-            </>
-          }
-        >
-          ¿Seguro que deseas eliminar la habitación <b>{deleteTarget.number} · {deleteTarget.type}</b>? Esta acción no se puede deshacer.
-        </Modal>
-      )}
     </div>
   );
 }
