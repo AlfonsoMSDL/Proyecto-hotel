@@ -10,9 +10,11 @@ export default function ClientNav() {
   return (
     <div className="nav" style={{ padding: 'var(--space-4) 40px', borderBottom: '1px solid var(--color-divider)' }}>
       <Link to="/" className="nav-brand" style={{ textDecoration: 'none', color: 'inherit' }}>Verdant Hotel</Link>
-      <Link to="/" aria-current={pathname === '/' ? 'page' : undefined}>Catálogo</Link>
-      <Link to="/mis-reservas" aria-current={pathname === '/mis-reservas' ? 'page' : undefined}>Mis reservas</Link>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginLeft: 'var(--space-6)' }}>
+      <div className="nav-links">
+        <Link to="/" aria-current={pathname === '/' ? 'page' : undefined}>Catálogo</Link>
+        <Link to="/mis-reservas" aria-current={pathname === '/mis-reservas' ? 'page' : undefined}>Mis reservas</Link>
+      </div>
+      <div className="nav-actions">
         <ThemeToggle />
         {user ? (
           <>
