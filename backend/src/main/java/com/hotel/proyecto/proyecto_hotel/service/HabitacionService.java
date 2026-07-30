@@ -16,7 +16,7 @@ import java.util.List;
 
 public interface HabitacionService {
     GetHabitacion save(HabitacionSave habitacionSave, List<MultipartFile> imagenes);
-    Habitacion  findById(Long id);
+    GetHabitacion  findById(Long id);
     void deleteById(Long id);
     boolean existePorId(Long id);
     Page<GetHabitacion> findAll(Pageable pageable);

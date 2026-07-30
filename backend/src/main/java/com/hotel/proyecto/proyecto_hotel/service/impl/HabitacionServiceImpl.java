@@ -107,14 +107,27 @@ public class HabitacionServiceImpl implements HabitacionService {
     }
 
     @Override
-    public Habitacion findById(Long id) {
-        return habitacionRepository.findById(id).orElse(null);
+    public GetHabitacion findById(Long id) {
+
+        Habitacion habitacion = habitacionRepository.findById(id).orElse(null);
+
+                //Busco el estado actual de esa habitacion
+        EstadoDeLaHabitacion estadoDeLaHabitacion = estadoDeLaHabitacionService.findByHabitacionAndFechaFinIsNull(habitacion);
+
+        //mapeo la habitacion a un GetHabitacion
+        GetHabitacion getHabitacion = habitacionMapper.toGetHabitacion(habitacion);
+
+        //El unico parametro que el mapper no puso en el GetHabitacion fue el del estado actual, eso lo hare yo manualmente
+        getHabitacion.setEstadoActual(estadoDeLaHabitacion.getEstadoHabitacion().getNombre());
+
+        //Ahora si ya esta toda la info necesaria para devolver el dto
+        return getHabitacion;
     }
 
     @Override
     public void deleteById(Long id) {
         //Primero busco la habitacion en la bd
-        Habitacion habitacion = findById(id);
+        Habitacion habitacion = habitacionRepository.findById(id).orElse(null);;
 
         //Ahora borro las fotos de esa habitacion de la carpeta uploads
         manejadorImagen.borrarImagenesPorHabitacion(habitacion);
