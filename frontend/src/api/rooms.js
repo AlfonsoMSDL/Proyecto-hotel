@@ -13,8 +13,18 @@ export async function fetchRooms(page = 0, size = 5) {
 }
 
 export async function fetchRoomById(id) {
-  // return fetch(`/api/rooms/${id}`).then(r => r.json());
-  return Promise.resolve(rooms.find((r) => r.id === id));
+  const habitacion = await fetch(`${BACKEND_URL_BASE}/habitaciones/${id}`);
+  return habitacion.json();
+}
+
+export async function getRoomImages(id) {
+  const fotos = await fetch(`${BACKEND_URL_BASE}/fotos/habitacion/${id}`);
+  return fotos.json();
+}
+
+export async function getRoomFirstImage(id) {
+  const foto = await fetch(`${BACKEND_URL_BASE}/fotos/first/habitacion/${id}`);
+  return foto.json();
 }
 
 export async function createRoom(payload, imageFiles = []) {
