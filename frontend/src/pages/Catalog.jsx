@@ -64,13 +64,15 @@ export default function Catalog() {
         </form>
       </div>
 
-      <div style={{ padding: '40px 40px 64px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <h3 style={{ margin: 0 }}>{totalElements} habitaciones disponibles</h3>
-          <div style={{ fontSize: 13, opacity: 0.7 }}>Ordenar por: <span style={{ color: 'var(--color-accent-300)' }}>Precio ↑</span></div>
+      <div style={{ padding: '40px 20px 64px', display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1280, margin: '0 auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+            <h3 style={{ margin: 0 }}>{totalElements} habitaciones disponibles</h3>
+            <div style={{ fontSize: 13, opacity: 0.7 }}>Ordenar por: <span style={{ color: 'var(--color-accent-300)' }}>Precio ↑</span></div>
+          </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-6)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'var(--space-6)' }}>
           {loading ? (
             <div>Cargando...</div>
           ) : rooms.length === 0 ? (
