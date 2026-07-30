@@ -56,8 +56,11 @@ public class SpringSecurityConfig {
                     authz
                         .requestMatchers(HttpMethod.POST,"/usuarios").permitAll()
                         .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/swagger-ui.html").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/habitaciones").permitAll()
                         .requestMatchers(HttpMethod.GET,"/habitaciones/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/fotos/habitacion/{idHabitacion}").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/fotos/first/habitacion/{idHabitacion}").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilter(jwtAuthenticationFilter)
@@ -73,6 +76,7 @@ public class SpringSecurityConfig {
                 .build();
     }
 
+    
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
