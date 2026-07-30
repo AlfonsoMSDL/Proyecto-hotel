@@ -17,12 +17,16 @@ public class FotoController {
     private FotoService fotoService;
 
     @GetMapping("/habitacion/{idHabitacion}")
-    public ResponseEntity<List<GetFoto>> getFotosByIdHabitacion(@PathVariable Long idHabitacion){
+    public ResponseEntity<?> getFotosByIdHabitacion(@PathVariable Long idHabitacion){
         List<GetFoto> fotos =  fotoService.findByIdHabitacion(idHabitacion);
         return ResponseEntity.ok(fotos);
 
     }
-
+    @GetMapping("/first/habitacion/{idHabitacion}")
+    public ResponseEntity<?> obtenerPrimeraFotoPorIdHabitacion(@PathVariable Long idHabitacion){
+        GetFoto foto =  fotoService.obtenerPrimeraFotoPorIdHabitacion(idHabitacion);
+        return ResponseEntity.ok(foto);
+    }
     @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFoto(@PathVariable Long id){

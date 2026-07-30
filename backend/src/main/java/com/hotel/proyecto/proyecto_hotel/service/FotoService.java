@@ -7,5 +7,6 @@ import java.util.List;
 public interface FotoService {
     List<GetFoto>  findByIdHabitacion(Long idHabitacion);
     void eliminarFotoDeHabitacion(Long idFoto) throws IOException;
+    GetFoto obtenerPrimeraFotoPorIdHabitacion(Long idHabitacion);
 
 }

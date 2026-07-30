@@ -26,6 +26,16 @@ public class FotoServiceImpl implements FotoService {
         return fotoMapper.toGetFotoList(fotos);
     }
 
+    
+
+    @Override
+    public GetFoto obtenerPrimeraFotoPorIdHabitacion(Long idHabitacion) {
+        Foto primeraFoto = fotoRepository.findFirstByHabitacionId(idHabitacion);
+
+        return fotoMapper.toGetFoto(primeraFoto);
+    }
+
+
 
     //Este metodo va a borrar una foto de una habitacion existente
     @Override
@@ -41,4 +51,6 @@ public class FotoServiceImpl implements FotoService {
         fotoRepository.delete(fotoEliminar);
         log.info("Foto eliminada de la base de datos.");
     }
+
+
 }

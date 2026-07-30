@@ -13,10 +13,13 @@ public interface FotoRepository extends JpaRepository<Foto, Long> {
 
     void deleteByHabitacion(Habitacion habitacion);
 
+    //Consulta para obtener todas las fotos de una habitacion
     @Query("""
                 SELECT f FROM Foto f
-                JOIN FETCH f.habitacion
                 WHERE f.habitacion.id = :idHabitacion
             """)
     List<Foto> findByIdHabitacion(Long idHabitacion);
+
+
+    Foto findFirstByHabitacionId(Long idHabitacion);
 }
