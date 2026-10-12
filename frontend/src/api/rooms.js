@@ -1,49 +1,128 @@
 // TODO: reemplazar estos stubs por llamadas reales a tu backend.
 import { rooms } from '../data/mockData.js';
-const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
+export const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
+
+async function parseErrorMessage(response, defaultMsg) {
+  try {
+    const errorJson = await response.json();
+    if (errorJson && typeof errorJson === 'object') {
+      if (errorJson.error) return errorJson.error;
+      if (errorJson.mensaje) return errorJson.mensaje;
+      const values = Object.values(errorJson);
+      if (values.length > 0) return values.join(', ');
+    }
+  } catch {
+    // If response is not JSON
+    try {
+      const errorText = await response.text();
+      if (errorText) return errorText;
+    } catch {
+      // ignore
+    }
+  }
+  return defaultMsg;
+}
 
 export async function fetchRooms(page = 0, size = 5) {
   const params = new URLSearchParams({ page: String(page), size: String(size) });
   const response = await fetch(BACKEND_URL_BASE + '/habitaciones?' + params.toString());
   if (!response.ok) {
-    const txt = await response.text();
-    throw new Error(txt || 'Error al obtener habitaciones');
+    const txt = await parseErrorMessage(response, 'Error al obtener habitaciones');
+    throw new Error(txt);
   }
   return response.json();
 }
 
+export async function fetchRoomsByType(type){
+
+  const response = await fetch(BACKEND_URL_BASE+"/habitaciones/tipo/"+type); 
+
+  if(!response.ok){
+    throw new Error("Hubo un error con la peticion");
+  }
+
+  return response.json();
+
+}
+
+export async function fetchRoomsByPriceRange(min, max){
+  const params = new URLSearchParams({"precioMinimo":min,"precioMaximo":max});
+
+  const response = await fetch(BACKEND_URL_BASE+"/habitaciones/precio?"+params.toString());
+
+  if(!response.ok){
+    throw new Error("Hubo un error con la peticion");
+  }
+
+  return response.json(); 
+}
+
+export async function fetchRoomsByAvailability(fechaLlegada, fechaSalida) {
+  const formatTimestamp = (dateStr) => {
+    if (!dateStr) return '';
+    let formatted = dateStr.replace('T', ' ');
+    if (!formatted.includes(' ')) {
+      formatted = `${formatted} 00:00:00`;
+    }
+    const parts = formatted.split(' ');
+    if (parts[1] && parts[1].split(':').length === 2) {
+      formatted = `${formatted}:00`;
+    }
+    return formatted;
+  };
+
+  const params = new URLSearchParams({
+    fechaLlegada: formatTimestamp(fechaLlegada),
+    fechaSalida: formatTimestamp(fechaSalida),
+  });
+
+  const response = await fetch(BACKEND_URL_BASE + '/habitaciones/disponibilidad_fecha?' + params.toString());
+
+  if (!response.ok) {
+    const txt = await parseErrorMessage(response, 'Error al filtrar habitaciones por disponibilidad de fechas');
+    throw new Error(txt);
+  }
+
+  return response.json();
+}
+
+
 export async function fetchRoomById(id) {
-  const habitacion = await fetch(`${BACKEND_URL_BASE}/habitaciones/${id}`);
-  return habitacion.json();
+  const response = await fetch(`${BACKEND_URL_BASE}/habitaciones/${id}`);
+  if (!response.ok) {
+    const txt = await parseErrorMessage(response, 'Error al obtener la habitación');
+    throw new Error(txt);
+  }
+  return response.json();
 }
 
 export async function getRoomImages(id) {
-  const fotos = await fetch(`${BACKEND_URL_BASE}/fotos/habitacion/${id}`);
-  return fotos.json();
+  const response = await fetch(`${BACKEND_URL_BASE}/fotos/habitacion/${id}`);
+  if (!response.ok) {
+    const txt = await parseErrorMessage(response, 'Error al obtener las fotos de la habitación');
+    throw new Error(txt);
+  }
+  return response.json();
 }
 
 export async function getRoomFirstImage(id) {
-  const foto = await fetch(`${BACKEND_URL_BASE}/fotos/first/habitacion/${id}`);
-  return foto.json();
+  const response = await fetch(`${BACKEND_URL_BASE}/fotos/first/habitacion/${id}`);
+  if (!response.ok) {
+    const txt = await parseErrorMessage(response, 'Error al obtener la foto de portada');
+    throw new Error(txt);
+  }
+  return response.json();
 }
 
 export async function createRoom(payload, imageFiles = []) {
   const formData = new FormData();
 
-  // Si los nombres de los campos en el payload no coinciden con los nombres esperados por el backend,
-  // ajusta aquí el mapeo manualmente.
   const fieldMap = {
     number: 'numero',
     capacity: 'capacidad',
     type: 'tipoHabitacion',
     price: 'precioNoche',
     description: 'descripcion',
-    // Agrega aquí otros campos según tu backend, por ejemplo:
-    // number: 'numero',
-    // capacity: 'capacidad',
-    // type: 'tipoHabitacion',
-    // price: 'precioNoche',
-    // description: 'descripcion',
   };
 
   Object.entries(payload).forEach(([key, value]) => {
@@ -57,7 +136,7 @@ export async function createRoom(payload, imageFiles = []) {
   });
 
   const token = localStorage.getItem('token');
-  const response = await fetch(BACKEND_URL_BASE+'/habitaciones', {
+  const response = await fetch(BACKEND_URL_BASE + '/habitaciones', {
     method: 'POST',
     headers: {
       'Authorization': token ? `Bearer ${token}` : undefined,
@@ -66,11 +145,76 @@ export async function createRoom(payload, imageFiles = []) {
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Error al crear habitación');
+    const errorText = await parseErrorMessage(response, 'Error al crear la habitación');
+    throw new Error(errorText);
   }
 
   return response.json();
+}
+
+export async function updateRoom(id, payload) {
+  const token = localStorage.getItem('token');
+  const bodyData = {
+    numero: Number(payload.number ?? payload.numero),
+    tipoHabitacion: payload.type ?? payload.tipoHabitacion,
+    precioNoche: Number(payload.price ?? payload.precioNoche),
+    capacidad: Number(payload.capacity ?? payload.capacidad),
+    descripcion: payload.description ?? payload.descripcion,
+  };
+
+  const response = await fetch(`${BACKEND_URL_BASE}/habitaciones/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : undefined,
+    },
+    body: JSON.stringify(bodyData),
+  });
+
+  if (!response.ok) {
+    const errorText = await parseErrorMessage(response, 'Error al actualizar la habitación');
+    throw new Error(errorText);
+  }
+
+  return response.json();
+}
+
+export async function addRoomImage(idHabitacion, file) {
+  const token = localStorage.getItem('token');
+  const formData = new FormData();
+  formData.append('imagen', file);
+
+  const response = await fetch(`${BACKEND_URL_BASE}/habitaciones/${idHabitacion}/fotos`, {
+    method: 'POST',
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : undefined,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await parseErrorMessage(response, 'Error al subir la imagen');
+    throw new Error(errorText);
+  }
+
+  return response.json();
+}
+
+export async function deleteRoomImage(idFoto) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BACKEND_URL_BASE}/fotos/${idFoto}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : undefined,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await parseErrorMessage(response, 'Error al eliminar la imagen');
+    throw new Error(errorText);
+  }
+
+  return true;
 }
 
 export async function deleteRoom(id) {
@@ -83,9 +227,11 @@ export async function deleteRoom(id) {
   });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(errorText || 'Error al eliminar habitación');
+    const errorText = await parseErrorMessage(res, 'Error al eliminar habitación');
+    throw new Error(errorText);
   }
 
   return true;
 }
+
+
