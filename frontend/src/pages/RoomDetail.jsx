@@ -41,13 +41,9 @@ export default function RoomDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleReserve = async () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    await createBooking({ roomId: room.id, nights, total });
-    navigate('/mis-reservas');
+  const handleReserve = () => {
+    if (!room) return;
+    navigate(`/reservar/${room.id}`);
   };
 
   const getImageUrl = (img) =>
