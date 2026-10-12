@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import AdminNav from '../../components/AdminNav.jsx';
-import { fetchAllBookings } from '../../api/bookings.js';
 
 const statusTag = {
   Confirmada: 'tag tag-accent',
