@@ -112,7 +112,14 @@ export default function AdminUsers() {
 
         <table className="table" style={{ marginTop: 18 }}>
           <thead>
-            <tr><th>Nombre</th><th>Apellido</th><th>Celular</th><th>Correo</th><th></th></tr>
+            <tr>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Celular</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Acciones</th>
+            </tr>
           </thead>
           <tbody>
             {loading ? (
@@ -126,7 +133,8 @@ export default function AdminUsers() {
                   <td>{u.apellido}</td>
                   <td>{u.celular || '-'}</td>
                   <td>{u.correo}</td>
-                  <td style={{ textAlign: 'right' }}>
+                  <td>{u.rol}</td>
+                  <td style={{ textAlign: 'center', justifyContent:'left', display: 'flex'}}>
                     <button className="btn btn-ghost" onClick={() => { setReservasTarget(u); setReservas([]); }}>Ver reservas</button>{' '}
                     <button className="btn btn-ghost" style={{ color: '#e07a7a' }} onClick={() => handleDelete(u)}>Eliminar</button>
                   </td>
