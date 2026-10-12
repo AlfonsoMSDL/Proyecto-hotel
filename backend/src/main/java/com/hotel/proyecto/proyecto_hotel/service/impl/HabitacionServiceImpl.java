@@ -237,9 +237,9 @@ public class HabitacionServiceImpl implements HabitacionService {
     }
 
     private void asignarDatosActualizados(Habitacion habitacion, HabitacionSave habitacionSave) throws NumeroHabitacionRepetidaException {
-        //Primero pregunto si el nuevo numero de la habitacion ya esta en uso por otra habitacion
-        if(habitacionRepository.existsByNumero(habitacionSave.numero())){
-            //Si ya existe lanzo una excepcion
+        // Primero verifico si el número de habitación cambió y si el nuevo número ya está en uso por otra habitación
+        if (habitacion.getNumero() != habitacionSave.numero() && habitacionRepository.existsByNumero(habitacionSave.numero())) {
+            // Si ya existe lanzo una excepcion
             log.info("Este numero de habitacion ya está en uso");
             throw new NumeroHabitacionRepetidaException("Este numero de habitacion ya está en uso");
         }
