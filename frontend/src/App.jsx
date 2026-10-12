@@ -9,6 +9,7 @@ import AdminRooms from './pages/admin/AdminRooms.jsx';
 import AdminRoomForm from './pages/admin/AdminRoomForm.jsx';
 import AdminBookings from './pages/admin/AdminBookings.jsx';
 import AdminUsers from './pages/admin/AdminUsers.jsx';
+import BookRoom from './pages/BookRoom.jsx';
 import SecurityRoute from './components/SecurityRoute.jsx';
 
 export default function App() {
@@ -21,6 +22,8 @@ export default function App() {
 
       
       <Route element={<SecurityRoute><Outlet /></SecurityRoute>}>
+        <Route path="/reservar/:idHabitacion" element={<BookRoom />} />
+        <Route path="/habitacion/:id/reservar" element={<BookRoom />} />
         <Route path="/mis-reservas" element={<MyBookings />} />
         <Route path="/admin/habitaciones" element={<AdminRooms />} />
         <Route path="/admin/habitaciones/nueva" element={<AdminRoomForm />} />
