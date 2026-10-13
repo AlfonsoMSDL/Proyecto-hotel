@@ -8,4 +8,5 @@ public interface EstadoDeLaReservaService {
     EstadoDeLaReserva findById(Long id);
     EstadoDeLaReserva save(EstadoDeLaReserva estadoReserva);
     EstadoDeLaReserva findByReservaAndEstadoReserva(Reserva reserva, EstadoReserva estadoReserva);
+    EstadoDeLaReserva findByReservaAndFechaFinIsNull(Reserva reserva);
 }

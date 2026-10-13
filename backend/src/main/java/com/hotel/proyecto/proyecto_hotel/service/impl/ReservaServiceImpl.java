@@ -3,9 +3,12 @@ package com.hotel.proyecto.proyecto_hotel.service.impl;
 import com.hotel.proyecto.proyecto_hotel.dto.request.SaveReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetHistorialReserva;
 import com.hotel.proyecto.proyecto_hotel.dto.response.GetReserva;
+import com.hotel.proyecto.proyecto_hotel.exception.EstadoHabitacionInvalidoException;
+import com.hotel.proyecto.proyecto_hotel.exception.EstadoReservaInvalidoException;
 import com.hotel.proyecto.proyecto_hotel.exception.FechaLlegadaNoIgualFechaActualException;
 import com.hotel.proyecto.proyecto_hotel.exception.FechasReservaInvalidasException;
 import com.hotel.proyecto.proyecto_hotel.exception.ReservaCruzadaException;
+import com.hotel.proyecto.proyecto_hotel.exception.ReservaNoEncontradaException;
 import com.hotel.proyecto.proyecto_hotel.mapper.ReservaMapper;
 import com.hotel.proyecto.proyecto_hotel.model.*;
 import com.hotel.proyecto.proyecto_hotel.model.enums.Rol;
@@ -125,45 +128,41 @@ public class ReservaServiceImpl implements ReservaService {
     @Override
     @Transactional
     public void cancelarReserva(Long idReserva, String correoSolicitante) {
-        //Primero busco la reserva que se va a cancelar
-        Reserva reserva = reservaRepository.findById(idReserva).orElse(null);
-        log.info("Reserva a cancelar \n{}",reserva);
+        // 1. Buscar la reserva (404 si no existe)
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new ReservaNoEncontradaException("No se encontró la reserva con ID: " + idReserva));
+        log.info("Reserva a cancelar \n{}", reserva);
 
-        //Solo el dueño de la reserva o un administrador pueden cancelarla
+        // 2. Solo el dueño de la reserva o un administrador pueden cancelarla
         Usuario solicitante = usuarioRepository.findByCorreo(correoSolicitante).orElse(null);
-        boolean esDueño = reserva.getUsuario().getCorreo().equals(correoSolicitante);
+        boolean esDueño = reserva.getUsuario() != null && reserva.getUsuario().getCorreo().equals(correoSolicitante);
         boolean esAdministrador = solicitante != null && solicitante.getRol() == Rol.ADMINISTRADOR;
         if (!esDueño && !esAdministrador) {
             throw new AccessDeniedException("No tienes permiso para cancelar esta reserva");
         }
 
-        //Luego busco el estado de Cancelada, para crear el estado de la reserva
-        EstadoReserva  estadoReserva = estadoReservaService.findByNombre("Cancelada");
-        //Luego creo el estado de la reserva para relacionar la reserva con el nuevo estado
-        log.info("Se le asigna el estado de Cancelada a esa reserva");
-        EstadoDeLaReserva estadoDeLaReserva = new EstadoDeLaReserva();
-        estadoDeLaReserva.setId(new EstadoDeLaReservaId());
-        estadoDeLaReserva.setEstadoReserva(estadoReserva);
-        estadoDeLaReserva.setReserva(reserva);
-        estadoDeLaReserva.setFechaInicio(Timestamp.valueOf(LocalDateTime.now()));
-        //Guardo el nuevo estado de la reserva
-        estadoDeLaReservaService.save(estadoDeLaReserva);
+        // 3. Validar que la reserva esté en estado Confirmada
+        EstadoDeLaReserva estadoActualReserva = estadoDeLaReservaService.findByReservaAndFechaFinIsNull(reserva);
+        if (estadoActualReserva == null || !"Confirmada".equalsIgnoreCase(estadoActualReserva.getEstadoReserva().getNombre())) {
+            throw new EstadoReservaInvalidoException("Solo se pueden cancelar reservas en estado 'Confirmada'. Estado actual: "
+                    + (estadoActualReserva != null ? estadoActualReserva.getEstadoReserva().getNombre() : "Sin estado"));
+        }
 
-        //Luego pongo una fecha de fin al estado de la reserva anterior
-        //Por logica este estado es el de confirmada, ya que si cancelo una reserva
-        //Es porque antes estuvo confirmada
-        //Asi que busco el estado de la reserva con estado Confirmada y la reserva que quiero cancelar
-        estadoReserva = estadoReservaService.findByNombre("Confirmada");
-        EstadoDeLaReserva estadoDeLaReservaUpdate = estadoDeLaReservaService.findByReservaAndEstadoReserva(reserva, estadoReserva);
-        //Luego de tener ese estado de la reserva, le asigno una fecha de fin
-        //para indicar que ese estado finalizo, la fecha de fin sera la fecha de inicio
-        // del nuevo estado de la reserva Cancelada
-        estadoDeLaReservaUpdate.setFechaFin(estadoDeLaReserva.getFechaInicio());
-        //ahora hago el save pero en realidad es un update
-        estadoDeLaReservaService.save(estadoDeLaReservaUpdate);
-        log.info("Se modifica el estado anterior de esa reserva, poniendole la fecha de fin");
+        Timestamp ahora = Timestamp.valueOf(LocalDateTime.now());
 
+        // 4. Cerrar el estado actual de la reserva
+        estadoActualReserva.setFechaFin(ahora);
+        estadoDeLaReservaService.save(estadoActualReserva);
 
+        // 5. Crear el nuevo estado de la reserva Cancelada
+        EstadoReserva estadoReservaCancelada = estadoReservaService.findByNombre("Cancelada");
+        EstadoDeLaReserva nuevoEstadoReserva = new EstadoDeLaReserva();
+        nuevoEstadoReserva.setId(new EstadoDeLaReservaId());
+        nuevoEstadoReserva.setEstadoReserva(estadoReservaCancelada);
+        nuevoEstadoReserva.setReserva(reserva);
+        nuevoEstadoReserva.setFechaInicio(ahora);
+        estadoDeLaReservaService.save(nuevoEstadoReserva);
+        log.info("Se canceló la reserva correctamente");
     }
 
     @Override
@@ -175,95 +174,107 @@ public class ReservaServiceImpl implements ReservaService {
     @Override
     @Transactional
     public void marcarEntrada(Long idReserva) throws FechaLlegadaNoIgualFechaActualException {
-        /*Para que se pueda marcar la entrada, la fecha en que se quiera
-        marcar esa entrada debe ser igual a la fecha de la reserva sin
-        tener en cuenta la hora exacta, debe ser el mismo dia*/
-        //Busco la reserva que se va a marcar
-        Reserva reserva = reservaRepository.findById(idReserva).orElse(null);
-        log.info("Reserva a marcar entrada {}",reserva);
+        // 1. Buscar la reserva (404 si no existe)
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new ReservaNoEncontradaException("No se encontró la reserva con ID: " + idReserva));
+        log.info("Reserva a marcar entrada {}", reserva);
+
+        // 2. Validar que la reserva esté en estado Confirmada (409 si no)
+        EstadoDeLaReserva estadoActualReserva = estadoDeLaReservaService.findByReservaAndFechaFinIsNull(reserva);
+        if (estadoActualReserva == null || !"Confirmada".equalsIgnoreCase(estadoActualReserva.getEstadoReserva().getNombre())) {
+            throw new EstadoReservaInvalidoException("Solo se puede marcar entrada para reservas en estado 'Confirmada'. Estado actual: "
+                    + (estadoActualReserva != null ? estadoActualReserva.getEstadoReserva().getNombre() : "Sin estado"));
+        }
+
+        // 3. Validar que la fecha de llegada sea igual a la fecha actual en America/Bogota
         ZoneId zonaHotel = ZoneId.of("America/Bogota");
         LocalDate fechaActual = LocalDate.now(zonaHotel);
         LocalDate fechaLlegada = reserva.getFechaLlegada()
                                         .toInstant()
                                         .atZone(zonaHotel)
                                         .toLocalDate();
-        log.info("Fecha de llegada {}",fechaLlegada);
-        log.info("Fecha de actual {}",fechaActual);
+        log.info("Fecha de llegada {}", fechaLlegada);
+        log.info("Fecha de actual {}", fechaActual);
 
-        if(!fechaActual.equals(fechaLlegada)){
+        if (!fechaActual.equals(fechaLlegada)) {
             log.info("La fecha de llegada debe ser igual a la fecha actual para que se pueda marcar la entrada.");
             throw new FechaLlegadaNoIgualFechaActualException("La fecha de llegada debe ser igual a la fecha actual para que se pueda marcar la entrada.");
         }
 
-        //Si las fechas son iguales entonces si se puede marcar la llegada
-
-        //Le doy a la habitacion un estado de Ocupada
-        EstadoHabitacion estadoHabitacion = estadoHabitacionService.findByNombre("Ocupada");
+        // 4. Validar el estado actual de la habitación
         Habitacion habitacion = reserva.getHabitacion();
-        EstadoDeLaHabitacion estadoDeLaHabitacion = new EstadoDeLaHabitacion();
-        estadoDeLaHabitacion.setHabitacion(habitacion);
-        estadoDeLaHabitacion.setEstadoHabitacion(estadoHabitacion);
-        estadoDeLaHabitacion.setFechaInicio(Timestamp.valueOf(LocalDateTime.now()));
+        EstadoDeLaHabitacion estadoActualHabitacion = estadoDeLaHabitacionService.findByHabitacionAndFechaFinIsNull(habitacion);
+        if (estadoActualHabitacion == null || !"Disponible".equalsIgnoreCase(estadoActualHabitacion.getEstadoHabitacion().getNombre())) {
+            throw new EstadoHabitacionInvalidoException("La habitación no se encuentra disponible para marcar entrada. Estado actual: "
+                    + (estadoActualHabitacion != null ? estadoActualHabitacion.getEstadoHabitacion().getNombre() : "Sin estado"));
+        }
 
-        estadoDeLaHabitacionService.save(estadoDeLaHabitacion);
-        log.info("Se guardo el nuevo estado de la habitacion a Ocupada");
+        Timestamp ahora = Timestamp.valueOf(LocalDateTime.now());
 
-        //Ahora al estado anterior de la habitacion (Disponible) le doy una fecha de fin
-        estadoHabitacion = estadoHabitacionService.findByNombre("Disponible");
-        EstadoDeLaHabitacion estadoDeLaHabitacionUpdate = estadoDeLaHabitacionService.findByHabitacionAndEstadoHabitacionAndFechaFinIsNull(habitacion, estadoHabitacion);
-        estadoDeLaHabitacionUpdate.setFechaFin(Timestamp.valueOf(LocalDateTime.now()));
+        // 5. Cerrar el estado actual de la habitación (Disponible)
+        estadoActualHabitacion.setFechaFin(ahora);
+        estadoDeLaHabitacionService.save(estadoActualHabitacion);
 
-        estadoDeLaHabitacionService.save(estadoDeLaHabitacionUpdate);
-        log.info("Se actualizo el estado anterior de la habitacion con la fecha de fin");
-
+        // 6. Asignar nuevo estado Ocupada a la habitación
+        EstadoHabitacion estadoOcupada = estadoHabitacionService.findByNombre("Ocupada");
+        EstadoDeLaHabitacion nuevoEstadoHabitacion = new EstadoDeLaHabitacion();
+        nuevoEstadoHabitacion.setHabitacion(habitacion);
+        nuevoEstadoHabitacion.setEstadoHabitacion(estadoOcupada);
+        nuevoEstadoHabitacion.setFechaInicio(ahora);
+        estadoDeLaHabitacionService.save(nuevoEstadoHabitacion);
+        log.info("Se guardó el nuevo estado de la habitación a Ocupada");
     }
 
     @Override
     @Transactional
     public void marcarSalida(Long idReserva) {
-        //Traigo la reserva que se va a marcar como completada
-        Reserva reserva = reservaRepository.findById(idReserva).orElse(null);
-        log.info("Reserva a marcar salida "+reserva);
-        //Busco el estado de reserva Completada
-        EstadoReserva estadoReserva = estadoReservaService.findByNombre("Completada");
-        //Creo un nuevo estado de la reserva
-        EstadoDeLaReserva estadoDeLaReserva  = new EstadoDeLaReserva();
-        estadoDeLaReserva.setId(new EstadoDeLaReservaId());
-        estadoDeLaReserva.setEstadoReserva(estadoReserva);
-        estadoDeLaReserva.setReserva(reserva);
-        estadoDeLaReserva.setFechaInicio(Timestamp.valueOf(LocalDateTime.now()));
-        estadoDeLaReservaService.save(estadoDeLaReserva);
-        log.info("La reserva pasa a estado de Completada");
+        // 1. Buscar la reserva (404 si no existe)
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new ReservaNoEncontradaException("No se encontró la reserva con ID: " + idReserva));
+        log.info("Reserva a marcar salida {}", reserva);
 
-        //Al estado anterior de esa reserva (Confirmada) le asigno una fecha de fin
-        estadoReserva = estadoReservaService.findByNombre("Confirmada");
-        EstadoDeLaReserva estadoDeLaReservaUpdate = estadoDeLaReservaService.findByReservaAndEstadoReserva(reserva, estadoReserva);
-        estadoDeLaReservaUpdate.setFechaFin(Timestamp.valueOf(LocalDateTime.now()));
-        estadoDeLaReservaService.save(estadoDeLaReservaUpdate);
-        log.info("El estado anterior de la reserva, se le pone una fecha de fin");
+        // 2. Validar que la reserva esté en estado Confirmada para poder completarla
+        EstadoDeLaReserva estadoActualReserva = estadoDeLaReservaService.findByReservaAndFechaFinIsNull(reserva);
+        if (estadoActualReserva == null || !"Confirmada".equalsIgnoreCase(estadoActualReserva.getEstadoReserva().getNombre())) {
+            throw new EstadoReservaInvalidoException("Solo se puede marcar salida para reservas en estado 'Confirmada'. Estado actual: "
+                    + (estadoActualReserva != null ? estadoActualReserva.getEstadoReserva().getNombre() : "Sin estado"));
+        }
 
-        //Ahora hago lo mismo para el estado de la habitacion, ya que debe quedar disponible, creo un nuevo estado de la habitacion y le asigno una fecha de fin al estado anterior
-        EstadoHabitacion estadoHabitacion = estadoHabitacionService.findByNombre("Disponible");
+        // 3. Validar que la habitación se encuentre actualmente en estado Ocupada
         Habitacion habitacion = reserva.getHabitacion();
+        EstadoDeLaHabitacion estadoActualHabitacion = estadoDeLaHabitacionService.findByHabitacionAndFechaFinIsNull(habitacion);
+        if (estadoActualHabitacion == null || !"Ocupada".equalsIgnoreCase(estadoActualHabitacion.getEstadoHabitacion().getNombre())) {
+            throw new EstadoHabitacionInvalidoException("La habitación no se encuentra en estado 'Ocupada' para marcar salida. Estado actual: "
+                    + (estadoActualHabitacion != null ? estadoActualHabitacion.getEstadoHabitacion().getNombre() : "Sin estado"));
+        }
 
+        Timestamp ahora = Timestamp.valueOf(LocalDateTime.now());
 
-        EstadoDeLaHabitacion estadoDeLaHabitacion  = new EstadoDeLaHabitacion();
-        estadoDeLaHabitacion.setEstadoHabitacion(estadoHabitacion);
-        estadoDeLaHabitacion.setHabitacion(habitacion);
-        estadoDeLaHabitacion.setFechaInicio(Timestamp.valueOf(LocalDateTime.now()));
+        // 4. Cerrar el estado anterior de la reserva (Confirmada)
+        estadoActualReserva.setFechaFin(ahora);
+        estadoDeLaReservaService.save(estadoActualReserva);
 
-        estadoDeLaHabitacionService.save(estadoDeLaHabitacion);
-        log.info("Se le asigna a la habitacion de la reserva el estado de Disponible");
+        // 5. Crear el nuevo estado de la reserva Completada
+        EstadoReserva estadoCompletada = estadoReservaService.findByNombre("Completada");
+        EstadoDeLaReserva nuevoEstadoReserva = new EstadoDeLaReserva();
+        nuevoEstadoReserva.setId(new EstadoDeLaReservaId());
+        nuevoEstadoReserva.setEstadoReserva(estadoCompletada);
+        nuevoEstadoReserva.setReserva(reserva);
+        nuevoEstadoReserva.setFechaInicio(ahora);
+        estadoDeLaReservaService.save(nuevoEstadoReserva);
+        log.info("La reserva pasa a estado Completada");
 
-        //Procedo a ponerle una fecha de fin al estado anterior
-        //El estado anterior es Reservada porque para cancelar una reservacion, previamente debe estar reservada
-        estadoHabitacion = estadoHabitacionService.findByNombre("Ocupada");
-        EstadoDeLaHabitacion estadoDeLaHabitacionUpdate = estadoDeLaHabitacionService.findByHabitacionAndEstadoHabitacionAndFechaFinIsNull(habitacion, estadoHabitacion);
-        estadoDeLaHabitacionUpdate.setFechaFin(estadoDeLaHabitacion.getFechaInicio());
+        // 6. Cerrar el estado actual de la habitación (Ocupada)
+        estadoActualHabitacion.setFechaFin(ahora);
+        estadoDeLaHabitacionService.save(estadoActualHabitacion);
 
-        estadoDeLaHabitacionService.save(estadoDeLaHabitacionUpdate);
-        log.info("Se modifica el estado anterior de esa habitacion, poniendole la fecha de fin");
-
-
+        // 7. Crear el nuevo estado de la habitación Disponible
+        EstadoHabitacion estadoDisponible = estadoHabitacionService.findByNombre("Disponible");
+        EstadoDeLaHabitacion nuevoEstadoHabitacion = new EstadoDeLaHabitacion();
+        nuevoEstadoHabitacion.setHabitacion(habitacion);
+        nuevoEstadoHabitacion.setEstadoHabitacion(estadoDisponible);
+        nuevoEstadoHabitacion.setFechaInicio(ahora);
+        estadoDeLaHabitacionService.save(nuevoEstadoHabitacion);
+        log.info("La habitación pasa a estado Disponible");
     }
 }

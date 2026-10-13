@@ -81,4 +81,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
     }
 
+    @ExceptionHandler(ReservaNoEncontradaException.class)
+    ResponseEntity<?> errorReservaNoEncontrada(Exception ex) {
+        Map<String,String> errors = new HashMap<>();
+        errors.put("mensaje", "Error al buscar la reserva");
+        errors.put("error", ex.getMessage());
+        errors.put("codigo", HttpStatus.NOT_FOUND.toString());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
+
+    @ExceptionHandler({EstadoReservaInvalidoException.class, EstadoHabitacionInvalidoException.class})
+    ResponseEntity<?> errorEstadoInvalido(Exception ex) {
+        Map<String,String> errors = new HashMap<>();
+        errors.put("mensaje", "Estado no válido para la operación");
+        errors.put("error", ex.getMessage());
+        errors.put("codigo", HttpStatus.CONFLICT.toString());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
+    }
+
 }

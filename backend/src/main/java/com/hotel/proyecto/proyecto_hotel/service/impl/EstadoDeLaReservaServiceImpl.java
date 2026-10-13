@@ -26,4 +26,9 @@ public class EstadoDeLaReservaServiceImpl implements EstadoDeLaReservaService {
     public EstadoDeLaReserva findByReservaAndEstadoReserva(Reserva reserva, EstadoReserva estadoReserva) {
         return estadoDeLaReservaRepository.findByReservaAndEstadoReserva(reserva, estadoReserva);
     }
+
+    @Override
+    public EstadoDeLaReserva findByReservaAndFechaFinIsNull(Reserva reserva) {
+        return estadoDeLaReservaRepository.findByReservaAndFechaFinIsNull(reserva);
+    }
 }

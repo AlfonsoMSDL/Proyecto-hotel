@@ -11,4 +11,7 @@ public interface EstadoDeLaReservaRepository extends JpaRepository<EstadoDeLaRes
     //Esta consulta la voy a usar para buscar el estado de la reserva anterior a la que voy a insertar
     // para actualizar su fecha de fin
     EstadoDeLaReserva findByReservaAndEstadoReserva(Reserva reserva, EstadoReserva estadoReserva);
+
+    //Esta consulta la voy a usar para traer el estado actual de la reserva
+    EstadoDeLaReserva findByReservaAndFechaFinIsNull(Reserva reserva);
 }
