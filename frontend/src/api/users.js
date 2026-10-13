@@ -29,3 +29,17 @@ export async function deleteUser(id) {
   }
   return true;
 }
+
+export async function fetchUsersByRol(rol) {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${BACKEND_URL_BASE}/usuarios/byRol/${rol}`, {
+    headers: {
+      'Authorization': token ? `Bearer ${token}` : undefined,
+    }
+  });
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || 'Error al obtener usuarios');
+  }
+  return res.json();
+}
