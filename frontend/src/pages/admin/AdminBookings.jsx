@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 import AdminNav from '../../components/AdminNav.jsx';
-import { searchBookingsByClientName } from '../../api/bookings.js';
+import Modal from '../../components/Modal.jsx';
+import { useTheme } from '../../context/ThemeContext.jsx';
+import { searchBookingsByClientName, markCheckIn } from '../../api/bookings.js';
 import { fetchUsersByRol } from '../../api/users.js';
 import { fetchRooms } from '../../api/rooms.js';
 
@@ -23,17 +26,41 @@ function calcNights(llegada, salida) {
   return Math.max(0, Math.round((b - a) / (1000 * 60 * 60 * 24)));
 }
 
+function DetailRow({ label, children }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+      <span style={{ opacity: 0.65 }}>{label}</span>
+      <span style={{ textAlign: 'right' }}>{children}</span>
+    </div>
+  );
+}
+
 export default function AdminBookings() {
+  const { theme } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
+  const [roomTerm, setRoomTerm] = useState('');
   const [searchedName, setSearchedName] = useState('');
+  const [searchedRoom, setSearchedRoom] = useState('');
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [clientsById, setClientsById] = useState({});
-  const [priceByRoomNumber, setPriceByRoomNumber] = useState({});
+  const [roomsByNumber, setRoomsByNumber] = useState({});
+  const [selected, setSelected] = useState(null);
+  const [checkingIn, setCheckingIn] = useState(false);
+
+  const loadRooms = () =>
+    fetchRooms(0, 1000)
+      .then((data) => {
+        const rooms = Array.isArray(data.content) ? data.content : data;
+        const map = {};
+        rooms.forEach((r) => { map[r.numero] = r; });
+        setRoomsByNumber(map);
+      })
+      .catch((err) => console.error(err));
 
   // GetReserva solo trae idUsuario y numHabitacion: se cargan clientes y habitaciones
-  // una vez para mostrar el nombre del cliente y calcular el total.
+  // para mostrar el nombre del cliente, el estado de la habitación y calcular el total.
   useEffect(() => {
     fetchUsersByRol('CLIENTE')
       .then((users) => {
@@ -43,19 +70,13 @@ export default function AdminBookings() {
       })
       .catch((err) => console.error(err));
 
-    fetchRooms(0, 1000)
-      .then((data) => {
-        const rooms = Array.isArray(data.content) ? data.content : data;
-        const map = {};
-        rooms.forEach((r) => { map[r.numero] = r.precioNoche; });
-        setPriceByRoomNumber(map);
-      })
-      .catch((err) => console.error(err));
+    loadRooms();
   }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     const nombreCompleto = searchTerm.trim();
+    const numHabitacion = roomTerm.trim();
     if (!nombreCompleto) {
       setErrorMsg('Ingresa el nombre completo del cliente.');
       return;
@@ -65,13 +86,16 @@ export default function AdminBookings() {
     setErrorMsg('');
     try {
       const data = await searchBookingsByClientName(nombreCompleto);
-      setBookings(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setBookings(numHabitacion ? list.filter((b) => String(b.numHabitacion) === numHabitacion) : list);
       setSearchedName(nombreCompleto);
+      setSearchedRoom(numHabitacion);
     } catch (err) {
       console.error(err);
       setErrorMsg(err.message || 'Error al buscar las reservas.');
       setBookings([]);
       setSearchedName('');
+      setSearchedRoom('');
     } finally {
       setLoading(false);
     }
@@ -79,16 +103,41 @@ export default function AdminBookings() {
 
   const handleClear = () => {
     setSearchTerm('');
+    setRoomTerm('');
     setSearchedName('');
+    setSearchedRoom('');
     setBookings([]);
     setErrorMsg('');
   };
 
   const getTotal = (b) => {
-    const price = priceByRoomNumber[b.numHabitacion];
+    const price = roomsByNumber[b.numHabitacion]?.precioNoche;
     if (price == null) return '—';
     return `$${(calcNights(b.fechaLlegada, b.fechaSalida) * price).toLocaleString()}`;
   };
+
+  const handleCheckIn = async () => {
+    setCheckingIn(true);
+    try {
+      await markCheckIn(selected.id);
+      await Swal.fire({
+        theme,
+        icon: 'success',
+        title: 'Entrada registrada',
+        text: `La habitación ${selected.numHabitacion} ahora está ocupada.`,
+      });
+      setSelected(null);
+      loadRooms();
+    } catch (err) {
+      console.error(err);
+      Swal.fire({ theme, icon: 'error', title: 'No se pudo marcar la entrada', text: err.message });
+    } finally {
+      setCheckingIn(false);
+    }
+  };
+
+  const selectedRoomState = selected ? roomsByNumber[selected.numHabitacion]?.estadoActual : null;
+  const roomOccupied = selectedRoomState === 'Ocupada';
 
   return (
     <div>
@@ -97,7 +146,7 @@ export default function AdminBookings() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <h1 style={{ margin: 0 }}>Reservas</h1>
           <p style={{ opacity: 0.65, margin: 0, fontSize: 14 }}>
-            Busca las reservas confirmadas de un cliente por su nombre completo.
+            Busca las reservas confirmadas de un cliente por su nombre completo y haz clic en una para marcar su entrada.
           </p>
         </div>
 
@@ -110,6 +159,16 @@ export default function AdminBookings() {
             onChange={(e) => setSearchTerm(e.target.value)}
             aria-label="Nombre completo del cliente"
             style={{ flex: '1 1 280px', maxWidth: 420 }}
+          />
+          <input
+            className="input"
+            type="number"
+            min="1"
+            placeholder="Nº habitación (opcional)"
+            value={roomTerm}
+            onChange={(e) => setRoomTerm(e.target.value)}
+            aria-label="Número de habitación"
+            style={{ flex: '0 1 200px' }}
           />
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Buscando...' : 'Buscar'}
@@ -137,6 +196,7 @@ export default function AdminBookings() {
         {searchedName && !loading && (
           <p style={{ opacity: 0.65, margin: 0, fontSize: 14 }}>
             {bookings.length} reserva{bookings.length !== 1 ? 's' : ''} para "{searchedName}"
+            {searchedRoom && ` en la habitación ${searchedRoom}`}
           </p>
         )}
 
@@ -150,12 +210,21 @@ export default function AdminBookings() {
             ) : !searchedName ? (
               <tr><td colSpan={6} style={{ opacity: 0.7 }}>Ingresa el nombre de un cliente para ver sus reservas.</td></tr>
             ) : bookings.length === 0 ? (
-              <tr><td colSpan={6} style={{ opacity: 0.7 }}>No se encontraron reservas confirmadas para este cliente.</td></tr>
+              <tr><td colSpan={6} style={{ opacity: 0.7 }}>
+                {searchedRoom
+                  ? `El cliente no tiene una reserva válida para la habitación ${searchedRoom}.`
+                  : 'No se encontraron reservas confirmadas para este cliente.'}
+              </td></tr>
             ) : (
               bookings.map((b) => {
                 const nights = calcNights(b.fechaLlegada, b.fechaSalida);
                 return (
-                  <tr key={b.id}>
+                  <tr
+                    key={b.id}
+                    onClick={() => setSelected(b)}
+                    title="Marcar entrada"
+                    style={{ cursor: 'pointer' }}
+                  >
                     <td>#{b.id}</td>
                     <td>{clientsById[b.idUsuario] ?? `Cliente #${b.idUsuario}`}</td>
                     <td>{b.numHabitacion}</td>
@@ -172,6 +241,37 @@ export default function AdminBookings() {
           </tbody>
         </table>
       </div>
+
+      {selected && (
+        <Modal
+          title={`Marcar entrada · Reserva #${selected.id}`}
+          onClose={() => !checkingIn && setSelected(null)}
+          actions={<>
+            <button className="btn btn-secondary" onClick={() => setSelected(null)} disabled={checkingIn}>
+              Cancelar
+            </button>
+            <button className="btn btn-primary" onClick={handleCheckIn} disabled={checkingIn || roomOccupied}>
+              {checkingIn ? 'Marcando...' : 'Marcar entrada'}
+            </button>
+          </>}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <DetailRow label="Cliente">{clientsById[selected.idUsuario] ?? `Cliente #${selected.idUsuario}`}</DetailRow>
+            <DetailRow label="Habitación">
+              {selected.numHabitacion}
+              {selectedRoomState && <span className="tag tag-neutral" style={{ marginLeft: 8 }}>{selectedRoomState}</span>}
+            </DetailRow>
+            <DetailRow label="Llegada">{formatDate(selected.fechaLlegada)}</DetailRow>
+            <DetailRow label="Salida">{formatDate(selected.fechaSalida)}</DetailRow>
+            <DetailRow label="Total">{getTotal(selected)}</DetailRow>
+            <p style={{ margin: '6px 0 0', opacity: 0.75 }}>
+              {roomOccupied
+                ? 'La habitación ya está ocupada, no se puede registrar otra entrada.'
+                : 'Al confirmar, la habitación pasará a estado Ocupada. Solo se puede marcar la entrada el día de llegada.'}
+            </p>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

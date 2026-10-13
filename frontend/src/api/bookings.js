@@ -87,3 +87,15 @@ export async function searchBookingsByClientName(nombreCompleto) {
   }
   return response.json();
 }
+
+export async function markCheckIn(idReserva) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BACKEND_URL_BASE}/reservas/marcar-entrada/${idReserva}`, {
+    method: 'POST',
+    headers: { Authorization: token ? `Bearer ${token}` : '' },
+  });
+  if (!response.ok) {
+    const errorText = await parseErrorMessage(response, 'No se pudo marcar la entrada');
+    throw new Error(errorText);
+  }
+}
