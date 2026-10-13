@@ -99,3 +99,15 @@ export async function markCheckIn(idReserva) {
     throw new Error(errorText);
   }
 }
+
+export async function markCheckOut(idReserva) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BACKEND_URL_BASE}/reservas/marcar-salida/${idReserva}`, {
+    method: 'POST',
+    headers: { Authorization: token ? `Bearer ${token}` : '' },
+  });
+  if (!response.ok) {
+    const errorText = await parseErrorMessage(response, 'No se pudo marcar la salida');
+    throw new Error(errorText);
+  }
+}
