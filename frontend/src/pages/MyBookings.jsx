@@ -4,8 +4,6 @@ import Swal from 'sweetalert2';
 import { useTheme } from '../context/ThemeContext.jsx';
 import {fetchBookingsByStatus, cancelBooking} from '../api/bookings.js'
 
-const BACKEND_URL_BASE = 'http://localhost:8181/hotel/api';
-
 const SECTIONS = [
   { key: 'Confirmada', label: 'Confirmadas' },
   { key: 'Completada', label: 'Completadas' },
