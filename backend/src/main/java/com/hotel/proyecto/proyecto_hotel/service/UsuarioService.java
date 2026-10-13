@@ -9,7 +9,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 public interface UsuarioService {
-    GetUsuario save(UsuarioSave usuario);
+    GetUsuario save(UsuarioSave usuario, boolean isAdmin);
     GetUsuario findById(Long id);
     GetUsuario findByCorreo(String correo);
     Page<GetUsuario> findAll(Pageable pageable);

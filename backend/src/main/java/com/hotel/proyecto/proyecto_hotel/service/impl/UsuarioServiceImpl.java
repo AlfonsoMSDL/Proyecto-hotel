@@ -27,7 +27,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public GetUsuario save(UsuarioSave usuarioSave) {
+    public GetUsuario save(UsuarioSave usuarioSave, boolean isAdmin) {
         //Primero verifico que el correo no este registrado en la BD
         boolean existeCorreo = usuarioRepository.existsByCorreo(usuarioSave.correo());
         if (existeCorreo) {
@@ -36,7 +36,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
         //Mapeo el usuarioSave a un usuario para poder guardarlo en la bd
         Usuario usuario = usuarioMapper.toUsuarioFromUsuarioSave(usuarioSave);
-        usuario.setRol(Rol.CLIENTE); //Establezco su rol
+
+         //Establezco su rol
+        if(isAdmin){
+            usuario.setRol(Rol.ADMINISTRADOR);
+        }else{
+            usuario.setRol(Rol.CLIENTE);
+        }
+        
         //Encripto la clave con Spring security
         String claveEncriptada = passwordEncoder.encode( usuarioSave.clave());
         usuario.setClave(claveEncriptada);

@@ -35,7 +35,7 @@ public class UsuarioController {
         if(bindingResult.hasFieldErrors()){
             return getErrors(bindingResult);
         }
-        GetUsuario usuario = usuarioService.save(usuarioSave);
+        GetUsuario usuario = usuarioService.save(usuarioSave,false);
         return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
     }
 
