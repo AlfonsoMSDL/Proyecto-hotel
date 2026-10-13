@@ -148,3 +148,6 @@ INSERT INTO estados_habitaciones (nombre, descripcion)  VALUES ('Disponible','Ha
 INSERT INTO estados_reservas (nombre,descripcion) VALUES ('Completada','El cliente ya fue al hotel'),
                                                          ('Cancelada','El cliente cancelo la reservacion'),
                                                          ('Confirmada','El cliente crea la reserva correctamente');
+
+-- Crear usuario admin por defecto
+INSERT INTO usuarios (nombre, apellido, correo, clave, celular, rol) VALUES ('ADMIN','ADMIN','admin@gmail.com','admin','3045440396', 'ADMINISTRADOR');
