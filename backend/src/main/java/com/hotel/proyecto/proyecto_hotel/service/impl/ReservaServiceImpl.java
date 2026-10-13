@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -180,9 +181,11 @@ public class ReservaServiceImpl implements ReservaService {
         //Busco la reserva que se va a marcar
         Reserva reserva = reservaRepository.findById(idReserva).orElse(null);
         log.info("Reserva a marcar entrada {}",reserva);
-        LocalDate fechaActual = LocalDate.now();
+        ZoneId zonaHotel = ZoneId.of("America/Bogota");
+        LocalDate fechaActual = LocalDate.now(zonaHotel);
         LocalDate fechaLlegada = reserva.getFechaLlegada()
-                                        .toLocalDateTime()
+                                        .toInstant()
+                                        .atZone(zonaHotel)
                                         .toLocalDate();
         log.info("Fecha de llegada {}",fechaLlegada);
         log.info("Fecha de actual {}",fechaActual);

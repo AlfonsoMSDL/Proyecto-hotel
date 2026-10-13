@@ -194,8 +194,8 @@ export default function BookRoom() {
     try {
       const payload = {
         idHabitacion: Number(roomId),
-        fechaLlegada: `${checkInDate}T00:00:00`,
-        fechaSalida: `${checkOutDate}T00:00:00`,
+        fechaLlegada: `${checkInDate} 00:00:00`,
+        fechaSalida: `${checkOutDate} 00:00:00`,
       };
 
       await createBooking(payload);
