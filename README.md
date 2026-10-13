@@ -57,20 +57,25 @@ Muchos hoteles pequeños y medianos todavía gestionan sus reservas con hojas de
 ## ✨ Funcionalidades
 
 ### 🌍 Visitante (sin iniciar sesión)
-- Catálogo paginado de habitaciones con tarjetas e imagen de portada.
-- Filtros por **tipo** (Individual / Familiar), **rango de precio** y **disponibilidad entre fechas**.
-- Detalle de cada habitación con su galería de fotos.
-- Registro de cuenta e inicio de sesión.
+- Catálogo paginado de habitaciones con tarjetas informativas e imagen de portada.
+- **Barra lateral de filtros**: filtrado independiente por **tipo** (Individual / Familiar), **rango de precio** (mínimo y máximo) y **disponibilidad entre fechas** (consultando disponibilidad real en backend).
+- Detalle de cada habitación con su información técnica, precio por noche y galería de fotos.
+- Registro de cuenta de cliente e inicio de sesión.
 
 ### 🧳 Cliente
-- **Reserva guiada**: calendario de selección de fechas, desglose de precio por noche × número de noches y total a pagar.
-- Calendario que muestra las fechas ya reservadas de la habitación.
-- **Mis reservas**: historial agrupado por estado (Confirmadas, Canceladas, Completadas).
-- Cancelación de reservas propias, con confirmación previa.
+- **Reserva interactiva (`BookRoom`)**: calendario mensual navegable que **bloquea en rojo las fechas ocupadas** (incluyendo rangos completos de reservas existentes) para impedir selección de fechas no disponibles.
+- Desglose automático de noches calculadas y costo total según el precio por noche.
+- **Mis reservas (`MyBookings`)**: organizadas por **secciones con pestañas** (*Confirmadas*, *Completadas* y *Canceladas*, mostrando *Confirmadas* por defecto).
+- Tarjetas informativas con fechas formateadas, número de noches y estado visual.
+- **Cancelación de reservas**: opción de cancelar reservas activas (Confirmadas) con diálogo de confirmación y actualización inmediata.
 
 ### 🛎️ Administrador
-- **Habitaciones**: crear, editar y eliminar habitaciones, y subir o eliminar varias fotos por habitación.
-- **Reservas**: búsqueda por nombre del cliente, consulta de reservas confirmadas por habitación, **check-in** (marcar entrada) y **check-out** (marcar salida).
+- **Gestión de Reservas (`AdminBookings`)**:
+  - Búsqueda de reservas de clientes por **nombre completo** y filtro opcional por **número de habitación**.
+  - Visualización del estado actual de la habitación en tiempo real (*Disponible*, *Ocupada*, *En mantenimiento*).
+  - **Check-in (Marcar entrada)**: habilitado cuando la habitación está *Disponible* y la fecha actual coincide con la fecha de llegada de la reserva.
+  - **Check-out (Marcar salida)**: habilitado de forma intuitiva cuando la habitación está *Ocupada*, completando la reserva y liberando la habitación sin restricciones rígidas de fecha.
+- **Habitaciones**: crear, editar y eliminar habitaciones, y subir o eliminar múltiples fotos por habitación.
 - **Usuarios**: listado paginado, filtrado por rol y eliminación de usuarios.
 
 ### 🎨 Experiencia de usuario
@@ -85,15 +90,16 @@ Muchos hoteles pequeños y medianos todavía gestionan sus reservas con hojas de
 
 Todas las reglas se validan en el **backend**, así que no dependen del cliente:
 
-1. **Sin reservas cruzadas**: una habitación no puede tener dos reservas *confirmadas* con rangos de fechas que se solapen (`ReservaCruzadaException`).
-2. **Fechas coherentes**: la fecha de salida no puede ser anterior a la de llegada (`FechasReservaInvalidasException`).
-3. **Check-in el día correcto**: solo se puede marcar la entrada el mismo día de la fecha de llegada (`FechaLlegadaNoIgualFechaActualException`).
-4. **Check-in → habitación ocupada**: al marcar la entrada, la habitación cambia automáticamente a *Ocupada*.
-5. **Check-out → reserva completada**: al marcar la salida, la reserva pasa a *Completada*.
-6. **Propiedad de la reserva**: solo el dueño de la reserva (o un administrador) puede cancelarla. El usuario se obtiene del **token JWT**, nunca de datos enviados por el cliente.
-7. **Número de habitación único** (`NumeroHabitacionRepetidaException`) y **correo de usuario único** (`UsuarioRegistrarCorreoExistenteExcepcion`).
-8. **Imágenes validadas**: solo se aceptan archivos con content-type `image/*` (`TipoImagenIncorrectoException`), hasta 10 MB, y se guardan con nombres `UUID` para evitar colisiones.
-9. **Historial inmutable de estados**: cada cambio de estado cierra el anterior (`fecha_fin`) y abre uno nuevo (`fecha_inicio`), sin sobrescribir el historial.
+1. **Sin reservas cruzadas**: una habitación no puede tener dos reservas *confirmadas* con rangos de fechas que se solapen (`ReservaCruzadaException` $\rightarrow$ 409 Conflict).
+2. **Fechas coherentes**: la fecha de salida no puede ser anterior a la de llegada (`FechasReservaInvalidasException` $\rightarrow$ 400 Bad Request).
+3. **Zona horaria estandarizada**: backend (JVM, Jackson e Hibernate) configurados bajo la zona horaria `America/Bogota` (UTC-5), evitando desfases de días u horas entre cliente y servidor.
+4. **Check-in validado**: solo se puede marcar la entrada el mismo día de llegada (`FechaLlegadaNoIgualFechaActualException` $\rightarrow$ 409 Conflict), si la reserva está *Confirmada* y la habitación está *Disponible* (`EstadoHabitacionInvalidoException` $\rightarrow$ 409 Conflict). Al registrar la entrada, la habitación cambia automáticamente a *Ocupada*.
+5. **Check-out y cierre de estadía**: para marcar la salida, la reserva debe estar *Confirmada* y la habitación debe estar actualmente *Ocupada* (garantizando check-in previo). No se restringe a un día específico para permitir check-outs anticipados o por urgencia. Al marcar la salida, la reserva pasa a *Completada* y la habitación vuelve a *Disponible*.
+6. **Propiedad de la reserva**: solo el dueño de la reserva (o un administrador) puede cancelarla. El usuario se obtiene del **token JWT**, nunca de datos enviados por el cliente. Solo se pueden cancelar reservas en estado *Confirmada*.
+7. **Control de existencia**: ante identificadores inexistentes se responde de manera precisa con `ReservaNoEncontradaException` $\rightarrow$ 404 Not Found o `HabitacionNoEncontradaException` $\rightarrow$ 404 Not Found.
+8. **Número de habitación único** (`NumeroHabitacionRepetidaException` $\rightarrow$ 409 Conflict) y **correo de usuario único** (`UsuarioRegistrarCorreoExistenteExcepcion` $\rightarrow$ 409 Conflict).
+9. **Imágenes validadas**: solo se aceptan archivos con content-type `image/*` (`TipoImagenIncorrectoException`), hasta 10 MB, y se guardan con nombres `UUID` para evitar colisiones.
+10. **Historial inmutable de estados**: cada cambio de estado cierra el anterior (`fecha_fin`) y abre uno nuevo (`fecha_inicio`), sin sobrescribir el historial ni de reservas ni de habitaciones.
 
 Los errores se traducen a respuestas HTTP claras mediante un `GlobalExceptionHandler` centralizado.
 
@@ -411,14 +417,15 @@ npm run dev
 **Implementado**
 - ✅ API REST completa de usuarios, habitaciones, fotos y reservas
 - ✅ Autenticación JWT y autorización por roles
-- ✅ Validación de reservas cruzadas y flujo de check-in / check-out
-- ✅ Historial de estados para reservas y habitaciones
-- ✅ Frontend en React: catálogo con filtros, detalle, reserva, mis reservas, login/registro, administración de habitaciones y usuarios
+- ✅ Validación de reservas cruzadas y flujo completo de check-in / check-out
+- ✅ Estandarización de zona horaria (`America/Bogota`) en JVM, Hibernate y Jackson
+- ✅ Historial inmutable de estados para reservas y habitaciones
+- ✅ Frontend en React: catálogo con filtros laterales (tipo, precio y fechas), detalle, reserva interactiva con calendario bloqueado, mis reservas agrupadas por pestañas, login/registro
+- ✅ Panel de administración completo: gestión de habitaciones, fotos, usuarios y gestión de reservas con check-in y check-out en tiempo real
 - ✅ Contenerización del backend y la base de datos con Docker Compose
 
 **En progreso / próximos pasos**
-- 🔄 Panel de reservas del administrador en el frontend (búsqueda, check-in y check-out desde la UI)
-- 🔄 Protección de las rutas de administración por rol en el frontend
+- 🔄 Protección estricta de las rutas de administración por rol en el frontend
 - ⏳ Integración de pasarela de pagos (el modelo `Pago` ya existe)
 - ⏳ Notificaciones por correo (confirmación y cancelación de reservas)
 - ⏳ Frontend dentro de `compose.yml` y URL del backend configurable por variables de entorno
