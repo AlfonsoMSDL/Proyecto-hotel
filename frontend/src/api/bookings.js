@@ -74,3 +74,16 @@ export async function cancelBooking(id) {
   if (!response.ok) throw new Error('No se pudo cancelar la reserva');
 }
 
+
+export async function searchBookingsByClientName(nombreCompleto) {
+  const token = localStorage.getItem('token');
+  const response = await fetch(
+    `${BACKEND_URL_BASE}/reservas/clientes/${encodeURIComponent(nombreCompleto)}`,
+    { headers: { Authorization: token ? `Bearer ${token}` : '' } }
+  );
+  if (!response.ok) {
+    const errorText = await parseErrorMessage(response, 'Error al buscar las reservas del cliente');
+    throw new Error(errorText);
+  }
+  return response.json();
+}
