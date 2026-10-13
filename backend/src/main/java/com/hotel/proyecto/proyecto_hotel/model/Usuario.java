@@ -3,6 +3,7 @@ package com.hotel.proyecto.proyecto_hotel.model;
 import com.hotel.proyecto.proyecto_hotel.model.enums.Rol;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "reservas")
+@Builder 
 public class Usuario implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
