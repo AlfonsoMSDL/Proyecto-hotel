@@ -1,5 +1,7 @@
 import { authFetch } from '../utils/session.js';
-const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
+//const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
+//trayendo el hostname desde variables de entorno
+export const BACKEND_URL_BASE = "/hotel/api";
 
 async function parseErrorMessage(response, defaultMsg) {
   try {

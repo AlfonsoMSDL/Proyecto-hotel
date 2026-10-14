@@ -35,6 +35,7 @@ build/
 ##No subir la carpeta de las imagenes (uploads)
 backend/uploads
 
-backend/.env
+.env
 frontend/node_modules
 frontend/dist
+.gitignore
