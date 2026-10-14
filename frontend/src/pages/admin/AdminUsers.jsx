@@ -4,6 +4,7 @@ import Modal from '../../components/Modal.jsx';
 import { fetchUsers, deleteUser } from '../../api/users.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import Swal from 'sweetalert2';
+import styles from './AdminUsers.module.css';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -100,61 +101,62 @@ export default function AdminUsers() {
   }, [reservasTarget]);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={styles.root}>
       <AdminNav />
-      <div style={{ padding: '36px 40px 60px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <h1 style={{ margin: 0 }}>Usuarios</h1>
-            <p style={{ opacity: 0.65, margin: 0, fontSize: 14 }}>{users.length} usuarios registrados</p>
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <div className={styles.headerText}>
+            <h1 className={styles.title}>Usuarios</h1>
+            <p className={styles.subtitle}>{users.length} usuarios registrados</p>
           </div>
         </div>
 
-        <table className="table" style={{ marginTop: 18 }}>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Apellido</th>
-              <th>Celular</th>
-              <th>Correo</th>
-              <th>Rol</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={5}>Cargando...</td></tr>
-            ) : users.length === 0 ? (
-              <tr><td colSpan={5}>No hay usuarios registrados</td></tr>
-            ) : (
-              users.map((u) => (
-                <tr key={u.id}>
-                  <td>{u.nombre}</td>
-                  <td>{u.apellido}</td>
-                  <td>{u.celular || '-'}</td>
-                  <td>{u.correo}</td>
-                  <td>{u.rol}</td>
-                  <td style={{ textAlign: 'center', justifyContent:'left', display: 'flex'}}>
-                    <button className="btn btn-ghost" onClick={() => { setReservasTarget(u); setReservas([]); }}>Ver reservas</button>{' '}
-                    <button className="btn btn-ghost" style={{ color: '#e07a7a' }} onClick={() => handleDelete(u)}>Eliminar</button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <div className={styles.tableCard}>
+          <table className={`table ${styles.table}`}>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Celular</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th className={styles.actionsCell}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={6} className={styles.messageCell}>Cargando...</td></tr>
+              ) : users.length === 0 ? (
+                <tr><td colSpan={6} className={styles.messageCell}>No hay usuarios registrados</td></tr>
+              ) : (
+                users.map((u) => (
+                  <tr key={u.id}>
+                    <td className={styles.strong}>{u.nombre}</td>
+                    <td>{u.apellido}</td>
+                    <td className={styles.muted}>{u.celular || '-'}</td>
+                    <td>{u.correo}</td>
+                    <td><span className={styles.role}>{u.rol}</span></td>
+                    <td className={styles.actionsCell}>
+                      <button className="btn btn-ghost" onClick={() => { setReservasTarget(u); setReservas([]); }}>Ver reservas</button>{' '}
+                      <button className={`btn btn-ghost ${styles.deleteButton}`} onClick={() => handleDelete(u)}>Eliminar</button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         {totalPages > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ opacity: 0.75, fontSize: 14 }}>
+          <div className={styles.pagination}>
+            <div className={styles.pageInfo}>
               Mostrando {users.length} de {totalElements} usuarios · Página {page + 1} de {totalPages}
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className={styles.pageButtons}>
               <button className="btn btn-secondary" disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index}
-                  className={index === page ? 'btn btn-primary' : 'btn btn-secondary'}
-                  style={{ minWidth: 40 }}
+                  className={`${index === page ? 'btn btn-primary' : 'btn btn-secondary'} ${styles.pageButton}`}
                   onClick={() => setPage(index)}
                 >
                   {index + 1}
@@ -173,23 +175,25 @@ export default function AdminUsers() {
           actions={<><button className="btn btn-secondary" onClick={() => setReservasTarget(null)}>Cerrar</button></>}
         >
           {loadingReservas ? (
-            <div style={{ opacity: 0.8 }}>Cargando reservas...</div>
+            <div className={styles.modalMessage}>Cargando reservas...</div>
           ) : reservas.length === 0 ? (
-            <div style={{ opacity: 0.8 }}>No hay reservas para este usuario.</div>
+            <div className={styles.modalMessage}>No hay reservas para este usuario.</div>
           ) : (
-            <table className="table">
-              <thead><tr><th>Habitación</th><th>Entrada</th><th>Salida</th></tr></thead>
-              <tbody>
-                {reservas.map(r => (
-                  <tr key={r.id}>
-                    
-                    <td>{r.numHabitacion}</td>
-                    <td>{new Date(r.fechaLlegada).toLocaleString()}</td>
-                    <td>{new Date(r.fechaSalida).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className={styles.modalTableWrap}>
+              <table className="table">
+                <thead><tr><th>Habitación</th><th>Entrada</th><th>Salida</th></tr></thead>
+                <tbody>
+                  {reservas.map(r => (
+                    <tr key={r.id}>
+                      
+                      <td>{r.numHabitacion}</td>
+                      <td>{new Date(r.fechaLlegada).toLocaleString()}</td>
+                      <td>{new Date(r.fechaSalida).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </Modal>
       )}
