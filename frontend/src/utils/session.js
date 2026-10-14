@@ -38,6 +38,12 @@ export function isTokenValid(token = getToken()) {
   return getTokenRemainingMs(token) > 0;
 }
 
+// Roles del usuario según el claim `authority` del token (p. ej. ['ADMINISTRADOR']).
+export function getTokenRoles(token = getToken()) {
+  const authority = getTokenClaims(token)?.authority;
+  return Array.isArray(authority) ? authority : [];
+}
+
 // — Aviso global de sesión expirada —
 // AuthProvider se suscribe y se encarga de cerrar la sesión y llevar al login.
 

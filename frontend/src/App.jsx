@@ -20,11 +20,15 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Register />} />
 
-      
+      {/* Requieren sesión iniciada */}
       <Route element={<SecurityRoute><Outlet /></SecurityRoute>}>
         <Route path="/reservar/:idHabitacion" element={<BookRoom />} />
         <Route path="/habitacion/:id/reservar" element={<BookRoom />} />
         <Route path="/mis-reservas" element={<MyBookings />} />
+      </Route>
+
+      {/* Requieren sesión iniciada y rol de administrador */}
+      <Route element={<SecurityRoute roles={['ADMINISTRADOR']}><Outlet /></SecurityRoute>}>
         <Route path="/admin/habitaciones" element={<AdminRooms />} />
         <Route path="/admin/habitaciones/nueva" element={<AdminRoomForm />} />
         <Route path="/admin/habitaciones/:id" element={<AdminRoomForm />} />

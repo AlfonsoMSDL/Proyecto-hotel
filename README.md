@@ -422,13 +422,12 @@ npm run dev
 - ✅ Historial inmutable de estados para reservas y habitaciones
 - ✅ Frontend en React: catálogo con filtros laterales (tipo, precio y fechas), detalle, reserva interactiva con calendario bloqueado, mis reservas agrupadas por pestañas, login/registro
 - ✅ Panel de administración completo: gestión de habitaciones, fotos, usuarios y gestión de reservas con check-in y check-out en tiempo real
-- ✅ Contenerización del backend y la base de datos con Docker Compose
+- ✅ Contenerización completa con Docker Compose: backend, base de datos y frontend servido por Nginx como proxy inverso
+- ✅ Rutas del frontend protegidas por sesión y por rol (el panel de administración solo para `ADMINISTRADOR`)
 
 **En progreso / próximos pasos**
-- 🔄 Protección estricta de las rutas de administración por rol en el frontend
 - ⏳ Integración de pasarela de pagos (el modelo `Pago` ya existe)
 - ⏳ Notificaciones por correo (confirmación y cancelación de reservas)
-- ⏳ Frontend dentro de `compose.yml` y URL del backend configurable por variables de entorno
 - ⏳ Perfiles dev/prod y CORS restringido a orígenes concretos
 - ⏳ Pruebas unitarias y de integración
 - ⏳ CI/CD y despliegue en AWS
