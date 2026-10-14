@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+// Estilos globales primero, para que los CSS Modules de cada componente los puedan refinar.
+import './styles/nocturne.css';
 import App from './App.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
-import './styles/nocturne.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

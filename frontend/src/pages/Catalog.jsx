@@ -7,6 +7,7 @@ import {
   fetchRoomsByPriceRange,
   fetchRoomsByAvailability
 } from '../api/rooms.js';
+import styles from './Catalog.module.css';
 
 const PAGE_SIZE = 6; // cantidad de habitaciones por página
 
@@ -170,50 +171,27 @@ export default function Catalog() {
       <ClientNav />
 
       {/* Banner de Bienvenida */}
-      <div style={{ padding: '48px 40px 16px', maxWidth: 1320, margin: '0 auto' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 650 }}>
-          <h6 style={{ color: 'var(--color-accent-300)', margin: 0 }}>Bienvenido a Verdant</h6>
-          <h1 style={{ margin: 0 }}>Encuentra tu habitación ideal</h1>
-          <p style={{ opacity: 0.75, margin: 0, fontSize: 15 }}>
+      <div className={styles.hero}>
+        <div className={styles.heroInner}>
+          <h6 className={styles.eyebrow}>Bienvenido a Verdant</h6>
+          <h1 className={styles.title}>Encuentra tu habitación ideal</h1>
+          <p className={styles.subtitle}>
             Filtra por tipo, rango de precios o fechas para encontrar el espacio perfecto para tu estadía.
           </p>
         </div>
       </div>
 
       {/* Contenedor Principal: Filtros a la Izquierda + Catálogo a la Derecha */}
-      <div
-        style={{
-          padding: '24px 40px 64px',
-          maxWidth: 1320,
-          margin: '0 auto',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 32,
-          alignItems: 'flex-start',
-        }}
-      >
+      <div className={styles.layout}>
         {/* Panel Lateral de Filtros (Izquierda) */}
-        <aside
-          className="card elev-sm"
-          style={{
-            flex: '0 0 310px',
-            width: '100%',
-            maxWidth: 320,
-            padding: '32px 24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 28,
-            border: '1px solid var(--color-divider)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 4 }}>
-            <h3 style={{ margin: 0, fontSize: 18 }}>Filtros</h3>
+        <aside className={`card ${styles.sidebar}`}>
+          <div className={styles.sidebarHeader}>
+            <h3 className={styles.sidebarTitle}>Filtros</h3>
             {activeFilter && (
               <button
                 type="button"
-                className="btn btn-ghost"
+                className={`btn btn-ghost ${styles.clearLink}`}
                 onClick={handleClearFilters}
-                style={{ fontSize: 12, padding: '4px 10px' }}
               >
                 Limpiar
               </button>
@@ -221,16 +199,16 @@ export default function Catalog() {
           </div>
 
           {/* 1. Filtro por Tipo de Habitación */}
-          <form onSubmit={handleFilterByType} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
+          <form onSubmit={handleFilterByType} className={styles.filterForm}>
+            <label className={styles.filterLabel}>
               Tipo de habitación
             </label>
-            <div className="seg" style={{ width: '100%' }}>
+            <div className={`seg ${styles.segmented}`}>
               {[
                 { label: 'Individual', value: 'INDIVIDUAL' },
                 { label: 'Familiar', value: 'FAMILIAR' },
               ].map((t) => (
-                <label className="seg-opt" key={t.value} style={{ flex: 1, textAlign: 'center', padding: '8px 12px' }}>
+                <label className={`seg-opt ${styles.segOption}`} key={t.value}>
                   <input
                     type="radio"
                     name="filterType"
@@ -241,20 +219,20 @@ export default function Catalog() {
                 </label>
               ))}
             </div>
-            <button type="submit" className="btn btn-secondary" style={{ width: '100%', padding: '10px 14px' }}>
+            <button type="submit" className={`btn btn-secondary ${styles.fullButton}`}>
               Filtrar por tipo
             </button>
           </form>
 
-          <div style={{ height: 1, background: 'var(--color-divider)', opacity: 0.8 }} />
+          <div className={styles.divider} />
 
           {/* 2. Filtro por Rango de Precio */}
-          <form onSubmit={handleFilterByPrice} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
+          <form onSubmit={handleFilterByPrice} className={styles.filterForm}>
+            <label className={styles.filterLabel}>
               Precio por noche ($)
             </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div className="field" style={{ flex: 1 }}>
+            <div className={styles.priceRow}>
+              <div className={`field ${styles.priceField}`}>
                 <input
                   className="input"
                   type="number"
@@ -263,11 +241,10 @@ export default function Catalog() {
                   step="0.01"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  style={{ padding: '8px 12px' }}
                 />
               </div>
-              <span style={{ opacity: 0.5 }}>—</span>
-              <div className="field" style={{ flex: 1 }}>
+              <span className={styles.rangeDash}>—</span>
+              <div className={`field ${styles.priceField}`}>
                 <input
                   className="input"
                   type="number"
@@ -276,36 +253,34 @@ export default function Catalog() {
                   step="0.01"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  style={{ padding: '8px 12px' }}
                 />
               </div>
             </div>
-            <button type="submit" className="btn btn-secondary" style={{ width: '100%', padding: '10px 14px' }}>
+            <button type="submit" className={`btn btn-secondary ${styles.fullButton}`}>
               Filtrar por precio
             </button>
           </form>
 
-          <div style={{ height: 1, background: 'var(--color-divider)', opacity: 0.8 }} />
+          <div className={styles.divider} />
 
           {/* 3. Filtro por Disponibilidad de Fechas */}
-          <form onSubmit={handleFilterByDates} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
+          <form onSubmit={handleFilterByDates} className={styles.filterForm}>
+            <label className={styles.filterLabel}>
               Disponibilidad de fechas
             </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className={styles.dateFields}>
               <div className="field">
-                <label style={{ fontSize: 12, marginBottom: 4 }}>Llegada</label>
+                <label className={styles.dateLabel}>Llegada</label>
                 <input
                   className="input"
                   type="date"
                   value={checkInDate}
                   onChange={(e) => setCheckInDate(e.target.value)}
                   required
-                  style={{ padding: '8px 12px' }}
                 />
               </div>
               <div className="field">
-                <label style={{ fontSize: 12, marginBottom: 4 }}>Salida</label>
+                <label className={styles.dateLabel}>Salida</label>
                 <input
                   className="input"
                   type="date"
@@ -313,11 +288,10 @@ export default function Catalog() {
                   min={checkInDate || undefined}
                   onChange={(e) => setCheckOutDate(e.target.value)}
                   required
-                  style={{ padding: '8px 12px' }}
                 />
               </div>
             </div>
-            <button type="submit" className="btn btn-secondary" style={{ width: '100%', padding: '10px 14px' }}>
+            <button type="submit" className={`btn btn-secondary ${styles.fullButton}`}>
               Filtrar por fechas
             </button>
           </form>
@@ -325,9 +299,8 @@ export default function Catalog() {
           {activeFilter && (
             <button
               type="button"
-              className="btn btn-primary"
+              className={`btn btn-primary ${styles.resetButton}`}
               onClick={handleClearFilters}
-              style={{ width: '100%', padding: '10px 14px', marginTop: 4 }}
             >
               Restablecer todos los filtros
             </button>
@@ -335,28 +308,20 @@ export default function Catalog() {
         </aside>
 
         {/* Sección de Resultados y Habitaciones (Derecha) */}
-        <section style={{ flex: '1 1 600px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <section className={styles.results}>
           {/* Barra superior de estado / resultados */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <h3 style={{ margin: 0, fontSize: 20 }}>
+          <div className={styles.resultsBar}>
+            <div className={styles.resultsSummary}>
+              <h3 className={styles.resultsCount}>
                 {totalElements} habitación{totalElements === 1 ? '' : 'es'} disponible{totalElements === 1 ? '' : 's'}
               </h3>
               {activeFilter && (
-                <span className="tag tag-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span className={`tag tag-accent ${styles.filterChip}`}>
                   {activeFilter.label}
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'inherit',
-                      cursor: 'pointer',
-                      fontSize: 14,
-                      padding: 0,
-                      lineHeight: 1,
-                    }}
+                    className={styles.chipClose}
                     title="Quitar filtro"
                   >
                     ×
@@ -368,46 +333,21 @@ export default function Catalog() {
 
           {/* Mensaje de error si ocurre */}
           {errorMessage && (
-            <div
-              style={{
-                padding: 'var(--space-3)',
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-accent-700)',
-                borderRadius: 'var(--radius-md)',
-                color: 'var(--color-accent-200)',
-                fontSize: 13,
-              }}
-            >
+            <div className={styles.errorBox}>
               {errorMessage}
             </div>
           )}
 
           {/* Grid de Habitaciones */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: 'var(--space-6)',
-            }}
-          >
+          <div className={styles.grid}>
             {loading ? (
-              <div style={{ gridColumn: '1 / -1', padding: '48px 0', textAlign: 'center', opacity: 0.7 }}>
+              <div className={styles.loading}>
                 Cargando habitaciones...
               </div>
             ) : rooms.length === 0 ? (
-              <div
-                className="card elev-sm"
-                style={{
-                  gridColumn: '1 / -1',
-                  padding: '48px 24px',
-                  textAlign: 'center',
-                  border: '1px solid var(--color-divider)',
-                  gap: 16,
-                  alignItems: 'center',
-                }}
-              >
-                <div style={{ fontSize: 16, fontWeight: 500 }}>No se encontraron habitaciones</div>
-                <p style={{ opacity: 0.7, margin: 0, maxWidth: 400 }}>
+              <div className={`card ${styles.empty}`}>
+                <div className={styles.emptyTitle}>No se encontraron habitaciones</div>
+                <p className={styles.emptyText}>
                   No hay habitaciones que coincidan con el filtro seleccionado. Intenta con otros valores o restablece los filtros.
                 </p>
                 <button type="button" className="btn btn-secondary" onClick={handleClearFilters}>
@@ -423,7 +363,7 @@ export default function Catalog() {
 
           {/* Paginación (visible cuando no hay un filtro activo personalizado) */}
           {!activeFilter && totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>
+            <div className={styles.pagination}>
               <button
                 className="btn btn-secondary"
                 disabled={page === 0 || loading}
@@ -455,4 +395,3 @@ export default function Catalog() {
     </div>
   );
 }
-
