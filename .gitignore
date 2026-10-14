@@ -38,4 +38,3 @@ backend/uploads
 .env
 frontend/node_modules
 frontend/dist
-.gitignore

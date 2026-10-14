@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import ClientNav from '../components/ClientNav.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
-import { fetchRoomById, getRoomImages } from '../api/rooms.js'
+import { fetchRoomById, getRoomImages, BACKEND_URL_BASE } from '../api/rooms.js'
 import styles from './RoomDetail.module.css';
 
 export default function RoomDetail() {
@@ -13,8 +13,6 @@ export default function RoomDetail() {
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
-
-  const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
 
   useEffect(() => {
     async function load() {
