@@ -3,6 +3,7 @@ import ClientNav from '../components/ClientNav.jsx';
 import Swal from 'sweetalert2';
 import { useTheme } from '../context/ThemeContext.jsx';
 import {fetchBookingsByStatus, cancelBooking} from '../api/bookings.js'
+import styles from './MyBookings.module.css';
 
 const SECTIONS = [
   { key: 'Confirmada', label: 'Confirmadas' },
@@ -89,20 +90,19 @@ export default function MyBookings() {
   return (
     <div>
       <ClientNav />
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '44px 40px 64px', display: 'flex', flexDirection: 'column', gap: 28 }}>
+      <div className={styles.page}>
         {/* Encabezado */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <h1 style={{ margin: 0 }}>Mis reservas</h1>
-          <p style={{ opacity: 0.7, margin: 0 }}>Consulta y gestiona tus estadías en Verdant.</p>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Mis reservas</h1>
+          <p className={styles.subtitle}>Consulta y gestiona tus estadías en Verdant.</p>
         </div>
 
         {/* Tabs */}
-        <div className="seg" style={{ width: 'fit-content' }}>
+        <div className={`seg ${styles.tabs}`}>
           {SECTIONS.map(({ key, label }) => (
             <label
-              className="seg-opt"
+              className={`seg-opt ${styles.tab}`}
               key={key}
-              style={{ padding: '8px 20px', cursor: 'pointer' }}
             >
               <input
                 type="radio"
@@ -117,35 +117,17 @@ export default function MyBookings() {
 
         {/* Contenido */}
         {loading ? (
-          <div style={{ textAlign: 'center', opacity: 0.7, padding: '48px 0' }}>
+          <div className={styles.loading}>
             Cargando reservas...
           </div>
         ) : errorMsg ? (
-          <div style={{
-            padding: '14px 18px',
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-accent-700)',
-            borderRadius: 'var(--radius-md)',
-            color: 'var(--color-accent-200)',
-            fontSize: 14,
-          }}>
+          <div className={styles.errorBox}>
             ⚠️ {errorMsg}
           </div>
         ) : bookings.length === 0 ? (
-          <div
-            className="card elev-sm"
-            style={{
-              padding: '48px 24px',
-              textAlign: 'center',
-              border: '1px solid var(--color-divider)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-              alignItems: 'center',
-            }}
-          >
-            <div style={{ fontSize: 16, fontWeight: 500 }}>No hay reservas {SECTIONS.find(s => s.key === activeTab)?.label.toLowerCase()}</div>
-            <p style={{ opacity: 0.65, margin: 0, maxWidth: 360, fontSize: 14 }}>
+          <div className={`card ${styles.empty}`}>
+            <div className={styles.emptyTitle}>No hay reservas {SECTIONS.find(s => s.key === activeTab)?.label.toLowerCase()}</div>
+            <p className={styles.emptyText}>
               {activeTab === 'Confirmada'
                 ? 'Aún no tienes reservas activas. ¡Explora el catálogo y reserva tu habitación!'
                 : activeTab === 'Completada'
@@ -154,64 +136,46 @@ export default function MyBookings() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className={styles.list}>
             {bookings.map((b) => {
               const nights = calcNights(b.fechaLlegada, b.fechaSalida);
               return (
                 <div
                   key={b.idReserva}
-                  className="card elev-sm"
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: 'var(--space-4)',
-                    border: '1px solid var(--color-divider)',
-                    opacity: b.estado === 'Cancelada' ? 0.65 : 1,
-                    gap: 16,
-                  }}
+                  className={`card ${styles.booking} ${b.estado === 'Cancelada' ? styles.bookingCancelled : ''}`}
                 >
                   {/* Info */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20, flex: 1, minWidth: 0 }}>
+                  <div className={styles.info}>
                     {/* Icono de habitación */}
-                    <div style={{
-                      width: 56,
-                      height: 56,
-                      flexShrink: 0,
-                      borderRadius: 'var(--radius-md)',
-                      background: 'var(--color-surface)',
-                      border: '1px solid var(--color-divider)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 20,
-                    }}>
-                      🛏️
+                    <div className={styles.icon} aria-hidden="true">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 18V6M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5" />
+                        <circle cx="7" cy="11" r="1.8" />
+                      </svg>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 15 }}>
+                    <div className={styles.details}>
+                      <div className={styles.roomName}>
                         Habitación {b.numeroHabitacion}
                       </div>
-                      <div style={{ fontSize: 13, opacity: 0.7 }}>
+                      <div className={styles.dates}>
                         {formatDate(b.fechaLlegada)} → {formatDate(b.fechaSalida)}
                         &nbsp;·&nbsp;{nights} noche{nights !== 1 ? 's' : ''}
                       </div>
-                      <div style={{ fontSize: 12, opacity: 0.55 }}>
+                      <div className={styles.reference}>
                         Reserva #{b.idReserva}
                       </div>
                     </div>
                   </div>
 
                   {/* Estado + acciones */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <div className={styles.actions}>
                     <span className={STATUS_TAG[b.estado] ?? 'tag tag-neutral'}>
                       {b.estado}
                     </span>
                     {b.estado === 'Confirmada' && (
                       <button
-                        className="btn btn-secondary"
-                        style={{ fontSize: 13 }}
+                        className={`btn btn-secondary ${styles.cancelButton}`}
                         onClick={() => handleCancel(b)}
                       >
                         Cancelar
