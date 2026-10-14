@@ -1,0 +1,130 @@
+/* SweetAlert2 adaptado a la paleta Verdant.
+   SweetAlert expone sus colores como variables --swal2-*; aquí se apuntan a los
+   tokens del tema (--color-*), que ThemeContext cambia entre claro y oscuro, así
+   que las alertas siguen el modo activo sin tocar ninguna llamada a Swal.fire.
+   `html .swal2-container` supera en especificidad a [data-swal2-theme=…]. */
+
+html .swal2-container,
+html .swal2-container .swal2-popup {
+  --swal2-background: var(--color-surface);
+  --swal2-color: var(--color-text);
+  --swal2-backdrop: var(--color-overlay);
+  --swal2-border: 1px solid var(--color-border);
+  --swal2-border-radius: var(--radius-lg);
+  --swal2-width: 28em;
+  --swal2-padding: var(--space-2) var(--space-2) var(--space-6);
+  --swal2-outline: 0 0 0 3px color-mix(in srgb, var(--color-accent) 35%, transparent);
+
+  --swal2-confirm-button-background-color: var(--color-accent);
+  --swal2-confirm-button-color: var(--color-on-accent);
+  --swal2-confirm-button-border-radius: var(--radius-md);
+  --swal2-cancel-button-background-color: transparent;
+  --swal2-cancel-button-color: var(--color-text);
+  --swal2-cancel-button-border-radius: var(--radius-md);
+  --swal2-cancel-button-box-shadow: inset 0 0 0 1px var(--color-border);
+  --swal2-deny-button-background-color: var(--color-danger);
+  --swal2-deny-button-color: var(--color-bg);
+  --swal2-deny-button-border-radius: var(--radius-md);
+  --swal2-action-button-focus-box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 35%, transparent);
+
+  --swal2-input-background: var(--color-field);
+  --swal2-input-border: 1px solid var(--color-border);
+  --swal2-input-border-radius: var(--radius-md);
+  --swal2-input-focus-border: 1px solid var(--color-accent);
+  --swal2-footer-border-color: var(--color-border);
+  --swal2-footer-color: var(--color-text-muted);
+  --swal2-validation-message-background: var(--color-danger-soft);
+  --swal2-validation-message-color: var(--color-danger);
+  --swal2-timer-progress-bar-background: var(--color-accent);
+  --swal2-close-button-color: var(--color-text-muted);
+}
+
+/* — Caja — */
+.swal2-popup {
+  font-family: var(--font-body);
+  box-shadow: var(--shadow-lg);
+}
+
+.swal2-popup .swal2-title {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 1.75em;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.swal2-popup .swal2-html-container {
+  font-size: var(--fs-base);
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+/* — Botones — */
+.swal2-popup .swal2-actions {
+  gap: var(--space-2);
+}
+
+.swal2-popup .swal2-styled {
+  min-height: var(--control-height);
+  margin: 0;
+  padding: var(--space-2) var(--space-5);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.swal2-popup .swal2-styled.swal2-confirm:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.swal2-popup .swal2-styled.swal2-cancel:hover {
+  background-color: color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+/* — Íconos con los colores del tema — */
+.swal2-popup .swal2-icon.swal2-success {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.swal2-popup .swal2-icon.swal2-success .swal2-success-ring {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.swal2-popup .swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: var(--color-accent);
+}
+
+.swal2-popup .swal2-icon.swal2-error {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.swal2-popup .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+  background-color: var(--color-danger);
+}
+
+.swal2-popup .swal2-icon.swal2-warning {
+  border-color: var(--color-warm-strong);
+  color: var(--color-warm-strong);
+}
+
+.swal2-popup .swal2-icon.swal2-info,
+.swal2-popup .swal2-icon.swal2-question {
+  border-color: var(--color-text-muted);
+  color: var(--color-text-muted);
+}
+
+/* — Móvil — */
+@media (max-width: 520px) {
+  .swal2-popup .swal2-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+    padding-inline: var(--space-4);
+  }
+
+  .swal2-popup .swal2-styled {
+    width: 100%;
+  }
+}
