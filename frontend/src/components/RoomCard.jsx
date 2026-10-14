@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getRoomFirstImage } from '../api/rooms.js';
+import styles from './RoomCard.module.css';
 
 export default function RoomCard({ room, highlighted }) {
 
@@ -29,61 +30,30 @@ export default function RoomCard({ room, highlighted }) {
 
   return (
     <div
-      className={highlighted ? 'card elev-md' : 'card elev-sm'}
-      style={{
-        padding: 0,
-        overflow: 'hidden',
-        border: highlighted ? 'none' : '1px solid var(--color-divider)',
-        boxShadow: highlighted ? '0 0 0 1px var(--color-accent), 0 6px 18px rgba(0,0,0,0.3)' : undefined,
-      }}
+      className={`${highlighted ? 'card elev-md' : 'card elev-sm'} ${styles.card} ${highlighted ? styles.highlighted : ''}`}
     >
-      <div
-        style={{
-          height: 180,
-          overflow: 'hidden',
-          background: 'var(--color-surface)',
-        }}
-      >
+      <div className={styles.media}>
         {foto ? (
           <img
             src={getPrimeraFotoUrl()}
             alt={`Habitación ${room.numero}`}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
+            className={styles.image}
           />
         ) : (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background:
-                'repeating-linear-gradient(45deg, var(--color-neutral-900), var(--color-neutral-900) 10px, var(--color-neutral-800) 10px, var(--color-neutral-800) 20px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              font: '500 11px Inter',
-              letterSpacing: '.06em',
-              color: 'var(--color-neutral-500)',
-              textTransform: 'uppercase',
-            }}
-          >
+          <div className={styles.placeholder}>
             Cargando imagen...
           </div>
         )}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', padding: 'var(--space-4)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className={styles.body}>
+        <div className={styles.header}>
           <div className="card-title">Habitación {room.numero}</div>
-          <span className={room.tipoHabitacion === 'Familiar' ? 'tag tag-accent' : 'tag tag-neutral'}>{room.tipoHabitacion}</span>
+          <span className={room.tipoHabitacion === 'Familiar' ? 'tag tag-accent-2' : 'tag tag-accent'}>{room.tipoHabitacion}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 'var(--space-2)', borderTop: '1px solid var(--color-divider)' }}>
-          <div style={{ font: '500 18px Inter' }}>
-            ${room.precioNoche}<span style={{ fontSize: 13, opacity: 0.6 }}> /noche</span>
+        <div className={styles.footer}>
+          <div className={styles.price}>
+            ${room.precioNoche}<span className={styles.perNight}> /noche</span>
           </div>
           <Link className={highlighted ? 'btn btn-primary' : 'btn btn-secondary'} to={`/habitacion/${room.id}`}>
             Ver detalle{highlighted ? ' →' : ''}
