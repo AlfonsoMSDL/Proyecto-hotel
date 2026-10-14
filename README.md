@@ -312,7 +312,7 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 ```
 Proyecto-Hotel/
 ├── compose.yml                     # Orquestación: Nginx/frontend + backend + PostgreSQL
-├── .env                            # Variables de entorno (no se sube a git)
+├── .env.example                    # Plantilla de variables de entorno (copiar a .env, que no se sube a git)
 ├── backend/
 │   ├── Dockerfile                  # Build multi-etapa (Maven → JRE 21)
 │   ├── creacion_de_tablas.sql      # Esquema + datos iniciales
@@ -330,7 +330,8 @@ Proyecto-Hotel/
 │       └── config/                 # Seguridad, JWT, CORS, Swagger
 └── frontend/
     ├── Dockerfile                  # Build multi-etapa (Node → Nginx)
-    ├── nginx.conf                  # SPA + proxy inverso de /hotel/api
+    ├── nginx.conf                  # SPA + proxy inverso de /hotel/api (Docker Compose)
+    ├── vercel.json                 # Equivalente para Vercel: rewrites de la API y de la SPA
     ├── vite.config.js              # Proxy de la API para npm run dev
     ├── package.json
     └── src/
@@ -399,9 +400,11 @@ POSTGRES_DB=<nombre_de_la_base_de_datos>
 POSTGRES_PASSWORD=<contraseña_de_postgres>
 POSTGRES_HOST=bd
 SECRET_KEY_BACKEND=<clave_base64_de_al_menos_32_bytes>
+ADMIN_EMAIL=<correo_del_administrador>
+ADMIN_PASSWORD=<contraseña_del_administrador>
 ```
 
-Puedes generar la clave con:
+Hay una plantilla lista en [`.env.example`](.env.example): `cp .env.example .env`. Puedes generar la clave con:
 ```bash
 openssl rand -base64 32
 ```
@@ -417,10 +420,9 @@ docker compose up --build
 El backend y PostgreSQL no publican puertos: solo se accede a ellos a través de Nginx (o de la red interna de Docker).
 
 ### 4. Cuentas de prueba
-- Al arrancar por primera vez, el backend crea un **administrador por defecto**: `admin@gmail.com` / `admin`.
+- Al arrancar, el backend crea el **administrador inicial** con el `ADMIN_EMAIL` y el `ADMIN_PASSWORD` de tu `.env`, si esa cuenta aún no existe. No hay credenciales por defecto en el código: sin esas variables no se crea ningún administrador.
+- Si el administrador ya existe en la base de datos, cambiar el `.env` no modifica su contraseña (el backend solo crea la cuenta cuando no existe).
 - Los usuarios que se registran desde la app tienen rol **CLIENTE**.
-
-> ⚠️ Cambia la contraseña del administrador por defecto antes de desplegar la aplicación en un servidor público.
 
 ### (Opcional) Desarrollo del frontend con recarga en caliente
 `npm run dev` reenvía `/hotel/api` a `http://localhost:8181` (configurable con `VITE_BACKEND_TARGET`). Como el backend ya no publica ese puerto, para desarrollar exponlo temporalmente, por ejemplo con un `compose.override.yml`:
@@ -439,6 +441,27 @@ npm install
 npm run dev
 ```
 - App en modo desarrollo: `http://localhost:5173`
+
+---
+
+## ☁️ Despliegue en la nube (Vercel + AWS)
+
+Docker Compose junta todo en una máquina; en la nube cada pieza vive en un servicio distinto:
+
+| Pieza | Compose | Nube |
+|---|---|---|
+| Frontend (archivos estáticos) | Nginx | **Vercel** |
+| Proxy de `/hotel/api/*` hacia el backend | Nginx (`nginx.conf`) | Rewrites de Vercel (`frontend/vercel.json`) |
+| Backend (imagen Docker) | servicio `backend` | **AWS** (p. ej. EC2) |
+| Base de datos | servicio `bd` + volumen | **AWS RDS** (PostgreSQL) |
+| Variables de entorno | `.env` | Configuración de cada servicio |
+
+**`frontend/vercel.json`** hace por Vercel lo que `nginx.conf` hace en Docker: reenvía `/hotel/api/*` al backend y devuelve `index.html` en cualquier otra ruta para que React Router funcione al recargar. El navegador sigue hablando con un único origen, por eso el código del frontend no cambia (usa la ruta relativa `/hotel/api`).
+
+Antes de desplegar:
+- En Vercel, define **Root Directory = `frontend`** (el proyecto vive en una subcarpeta).
+- Reemplaza `https://api.tu-dominio.com` en `frontend/vercel.json` por la URL **HTTPS** pública de tu backend (`vercel.json` no admite comentarios ni variables de entorno, así que la URL va escrita en el archivo).
+- En el backend (AWS) configura las mismas variables del `.env`, apuntando `POSTGRES_HOST` al endpoint de RDS.
 
 ---
 
