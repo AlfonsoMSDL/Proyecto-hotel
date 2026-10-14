@@ -79,10 +79,10 @@ Muchos hoteles pequeños y medianos todavía gestionan sus reservas con hojas de
 - **Usuarios**: listado paginado, filtrado por rol y eliminación de usuarios.
 
 ### 🎨 Experiencia de usuario
-- Interfaz responsive con un sistema de diseño propio (*Nocturne*, basado en design tokens en CSS).
-- **Modo claro / oscuro** persistente.
-- Alertas y confirmaciones con SweetAlert2.
-- Rutas protegidas en el frontend y sesión basada en JWT.
+- Interfaz responsive (móvil, tablet y escritorio) con un sistema de diseño propio basado en **design tokens** (colores, tipografía y espaciados en variables CSS) y **CSS Modules** por componente.
+- **Modo claro / oscuro** persistente; las alertas de SweetAlert2 siguen el mismo tema.
+- **Sesión sincronizada con el JWT**: cuando el token expira (o el backend responde `401`), la app cierra la sesión, lleva al login con un aviso y, al volver a entrar, regresa a la página donde estaba el usuario.
+- **Rutas protegidas por sesión y por rol**: el panel de administración solo es accesible para `ADMINISTRADOR`.
 
 ---
 
@@ -111,15 +111,18 @@ Los errores se traducen a respuestas HTTP claras mediante un `GlobalExceptionHan
 
 ```mermaid
 flowchart LR
-    U[👤 Huésped / Administrador] -->|Navegador| FE[Frontend<br/>React 18 + Vite]
-    FE -->|REST + JSON<br/>Authorization: Bearer JWT| BE[Backend<br/>Spring Boot 4 · Java 21]
+    U[👤 Huésped / Administrador] -->|HTTP :80| NG[Nginx<br/>SPA React 18 compilada con Vite]
+    NG -->|/hotel/api/*<br/>proxy inverso · Bearer JWT| BE[Backend<br/>Spring Boot 4 · Java 21]
     BE -->|Spring Data JPA| DB[(PostgreSQL 14)]
     BE -->|Archivos| FS[/uploads/habitaciones/]
     subgraph Docker Compose
+        NG
         BE
         DB
     end
 ```
+
+Solo Nginx publica un puerto (`80`). El navegador habla con un único origen: Nginx sirve el frontend y reenvía `/hotel/api/*` al backend por la red interna de Docker, así que no hay problemas de CORS y ni el backend ni PostgreSQL quedan expuestos.
 
 ### Backend: arquitectura en capas
 
@@ -148,9 +151,11 @@ flowchart TD
 ### Frontend
 
 - **SPA con React 18 + Vite** y **React Router 6**.
-- Capa `api/` que agrupa las llamadas `fetch` al backend por recurso (`auth`, `rooms`, `bookings`, `users`).
-- `context/` para el estado global (`AuthContext` para la sesión, `ThemeContext` para el tema).
-- `SecurityRoute` protege las rutas que requieren autenticación, validando el JWT con `jwt-decode`.
+- Capa `api/` que agrupa las llamadas al backend por recurso (`auth`, `rooms`, `bookings`, `users`) con una única ruta base relativa (`api/config.js`).
+- `utils/session.js` centraliza la sesión: lee `exp` y los roles del JWT con `jwt-decode` y expone `authFetch`, que añade `Authorization: Bearer …` y detecta los `401`.
+- `context/` para el estado global: `AuthContext` (sesión, temporizador de expiración y cierre automático) y `ThemeContext` (tema claro/oscuro).
+- `SecurityRoute` protege las rutas por sesión válida y, opcionalmente, por rol.
+- Estilos con **CSS Modules** por componente sobre tokens globales en `:root`.
 - Páginas separadas para cliente (`pages/`) y administrador (`pages/admin/`).
 
 ---
@@ -258,7 +263,9 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 - **Autorización por rol** con `@PreAuthorize("hasAuthority('ADMINISTRADOR')")` en los endpoints administrativos.
 - **Endpoints públicos limitados** al catálogo, los filtros, las fotos, el registro y Swagger. Todo lo demás requiere token.
 - **Verificación de propiedad**: el usuario se obtiene del token (`@AuthenticationPrincipal`), así que un cliente no puede reservar ni cancelar a nombre de otro.
-- **Secretos externalizados**: la clave de firma JWT y las credenciales de la base de datos se leen de variables de entorno (`backend/.env`, excluido de git).
+- **Secretos externalizados**: la clave de firma JWT y las credenciales de la base de datos se leen de variables de entorno (`.env` en la raíz, excluido de git).
+- **Superficie de red mínima**: en Docker Compose solo Nginx publica un puerto; backend y PostgreSQL solo son accesibles dentro de la red interna.
+- **Sesión coherente en el cliente**: el frontend descarta tokens vencidos, cierra la sesión al expirar y oculta el panel de administración a quien no tiene el rol (la autorización real sigue en el backend).
 - **CORS** configurado a nivel de aplicación.
 
 ---
@@ -288,14 +295,15 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 | **React Router 6** | Enrutamiento y rutas protegidas |
 | **jwt-decode** | Lectura del JWT en el cliente |
 | **SweetAlert2** | Alertas y confirmaciones |
-| **CSS con design tokens** | Sistema de diseño propio y modo claro/oscuro |
+| **CSS Modules + design tokens** | Estilos por componente, sistema de diseño propio y modo claro/oscuro |
 
 ### Base de datos e infraestructura
 | Tecnología | Uso |
 |---|---|
 | **PostgreSQL 14** | Base de datos relacional |
-| **Docker** (build multi-etapa) | Imagen del backend: compila con Maven y ejecuta con un JRE ligero |
-| **Docker Compose** | Orquestación de backend y base de datos, con volúmenes persistentes |
+| **Docker** (builds multi-etapa) | Backend: compila con Maven y ejecuta con un JRE ligero. Frontend: compila con Node y sirve con Nginx |
+| **Nginx** | Sirve la SPA (con fallback para React Router) y actúa como proxy inverso hacia la API |
+| **Docker Compose** | Orquestación de frontend, backend y base de datos, con volúmenes persistentes |
 
 ---
 
@@ -303,7 +311,8 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 
 ```
 Proyecto-Hotel/
-├── compose.yml                     # Orquestación: backend + PostgreSQL
+├── compose.yml                     # Orquestación: Nginx/frontend + backend + PostgreSQL
+├── .env                            # Variables de entorno (no se sube a git)
 ├── backend/
 │   ├── Dockerfile                  # Build multi-etapa (Maven → JRE 21)
 │   ├── creacion_de_tablas.sql      # Esquema + datos iniciales
@@ -320,21 +329,25 @@ Proyecto-Hotel/
 │       ├── exception/              # Excepciones de dominio + handler global
 │       └── config/                 # Seguridad, JWT, CORS, Swagger
 └── frontend/
+    ├── Dockerfile                  # Build multi-etapa (Node → Nginx)
+    ├── nginx.conf                  # SPA + proxy inverso de /hotel/api
+    ├── vite.config.js              # Proxy de la API para npm run dev
     ├── package.json
     └── src/
-        ├── api/                    # Cliente HTTP por recurso
+        ├── api/                    # Cliente HTTP por recurso + ruta base
         ├── components/             # Navbars, tarjetas, rutas protegidas, modal
         ├── context/                # Autenticación y tema
         ├── pages/                  # Catálogo, detalle, reserva, mis reservas, login
         │   └── admin/              # Panel de administración
-        └── styles/                 # Sistema de diseño
+        ├── styles/                 # Tokens globales y tema de SweetAlert
+        └── utils/                  # Sesión: JWT, expiración, authFetch
 ```
 
 ---
 
 ## 🔌 API REST
 
-URL base: `http://localhost:8181/hotel/api`
+URL base: `http://localhost/hotel/api` (a través de Nginx)
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
@@ -359,7 +372,7 @@ URL base: `http://localhost:8181/hotel/api`
 | `POST` | `/reservas/marcar-entrada/{id}` | Admin | Check-in |
 | `POST` | `/reservas/marcar-salida/{id}` | Admin | Check-out |
 
-📖 Documentación interactiva (Swagger UI): `http://localhost:8181/hotel/api/swagger-ui/index.html`
+📖 Documentación interactiva (Swagger UI): `http://localhost/hotel/api/swagger-ui/index.html`
 
 Para probar endpoints protegidos desde Swagger, inicia sesión en `POST /login`, copia el token y pégalo en **Authorize** (`bearerAuth`).
 
@@ -369,7 +382,7 @@ Para probar endpoints protegidos desde Swagger, inicia sesión en `POST /login`,
 
 ### Requisitos
 - Docker y Docker Compose
-- Node.js 18+ (para el frontend)
+- Node.js 18+ (solo para desarrollar el frontend con `npm run dev`)
 
 ### 1. Clonar el repositorio
 ```bash
@@ -378,7 +391,7 @@ cd Proyecto-Hotel
 ```
 
 ### 2. Configurar variables de entorno
-Crea `backend/.env` (no se incluye en el repositorio):
+Crea un archivo `.env` en la raíz del proyecto (no se incluye en el repositorio):
 
 ```env
 POSTGRES_USER=<usuario_de_postgres>
@@ -393,22 +406,39 @@ Puedes generar la clave con:
 openssl rand -base64 32
 ```
 
-### 3. Levantar backend y base de datos
+### 3. Levantar la aplicación
 ```bash
 docker compose up --build
 ```
-- API: `http://localhost:8181/hotel/api`
-- PostgreSQL expuesto en el puerto `55432` del host
+- App: `http://localhost`
+- API: `http://localhost/hotel/api`
+- Swagger UI: `http://localhost/hotel/api/swagger-ui/index.html`
 
-### 4. Levantar el frontend
+El backend y PostgreSQL no publican puertos: solo se accede a ellos a través de Nginx (o de la red interna de Docker).
+
+### 4. Cuentas de prueba
+- Al arrancar por primera vez, el backend crea un **administrador por defecto**: `admin@gmail.com` / `admin`.
+- Los usuarios que se registran desde la app tienen rol **CLIENTE**.
+
+> ⚠️ Cambia la contraseña del administrador por defecto antes de desplegar la aplicación en un servidor público.
+
+### (Opcional) Desarrollo del frontend con recarga en caliente
+`npm run dev` reenvía `/hotel/api` a `http://localhost:8181` (configurable con `VITE_BACKEND_TARGET`). Como el backend ya no publica ese puerto, para desarrollar exponlo temporalmente, por ejemplo con un `compose.override.yml`:
+
+```yaml
+services:
+  backend:
+    ports:
+      - "8181:8181"
+```
+
 ```bash
+docker compose up --build -d
 cd frontend
 npm install
 npm run dev
 ```
-- App: `http://localhost:5173`
-
-> Los usuarios que se registran desde la app tienen rol **CLIENTE**. Para probar el panel de administración, cambia el `rol` de un usuario a `ADMINISTRADOR` directamente en la base de datos.
+- App en modo desarrollo: `http://localhost:5173`
 
 ---
 
