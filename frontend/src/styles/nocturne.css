@@ -255,17 +255,6 @@ textarea.input { min-height: 90px; resize: vertical; }
 .seg-opt:not(:has(input:checked)):hover { color: var(--color-text); }
 .seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 1px; }
 
-/* — layout de autenticación — */
-.auth-layout { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
-@media (max-width: 860px) {
-  .auth-layout { grid-template-columns: 1fr; min-height: auto; }
-  .auth-visual { display: none; }
-}
-@media (max-width: 520px) {
-  .auth-form-wrap { padding: 40px 20px !important; }
-  .auth-row-2 { grid-template-columns: 1fr !important; }
-}
-
 /* — tarjetas — */
 .card {
   display: flex; flex-direction: column; gap: var(--space-2);

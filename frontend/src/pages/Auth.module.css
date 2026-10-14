@@ -1,0 +1,193 @@
+/* Estilos compartidos por Login y Register. */
+
+/* — Layout a dos columnas — */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+/* — Panel visual (izquierda) — */
+.visual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-12);
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 14px,
+      rgba(255, 255, 255, 0.03) 14px,
+      rgba(255, 255, 255, 0.03) 28px
+    ),
+    var(--color-accent-900);
+  color: var(--color-accent-100);
+  border-right: 1px solid var(--color-border);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  color: inherit;
+  font-family: var(--font-heading);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: #ffffff;
+}
+
+.quoteBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.caption {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent-300);
+}
+
+.quote {
+  max-width: 420px;
+  margin: 0;
+  color: #ffffff;
+  font-size: var(--fs-3xl);
+  line-height: 1.2;
+}
+
+/* — Formulario (derecha) — */
+.formWrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-14) var(--space-10);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 400px;
+}
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.formTitle {
+  margin: 0;
+  font-size: 36px;
+  letter-spacing: -0.02em;
+}
+
+.formSubtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: var(--fs-sm);
+}
+
+.errorIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-danger);
+  color: var(--color-danger-soft);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.terms {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.checkbox {
+  border-radius: var(--radius-sm);
+}
+
+.submit {
+  justify-content: center;
+  min-height: 48px;
+  margin-top: 0;
+  font-size: var(--fs-base);
+}
+
+.switch {
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.switchLink {
+  font-weight: var(--fw-semibold);
+}
+
+/* — Responsive — */
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .visual {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .formWrap {
+    padding: var(--space-10) var(--space-5);
+  }
+
+  .formTitle {
+    font-size: var(--fs-3xl);
+  }
+
+  .row2 {
+    grid-template-columns: 1fr;
+  }
+}

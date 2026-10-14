@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import Swal from 'sweetalert2'
 import { useTheme } from '../context/ThemeContext.jsx';
+import styles from './Auth.module.css';
 
 export default function Register() {
   const [form, setForm] = useState({ name: '', lastName: '', email: '', phone: '', password: '' });
@@ -35,33 +36,30 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-layout">
-      <div className="auth-visual" style={{
-        background: 'repeating-linear-gradient(45deg, var(--color-neutral-900), var(--color-neutral-900) 14px, var(--color-surface) 14px, var(--color-surface) 28px)',
-        display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 44, borderRight: '1px solid var(--color-divider)',
-      }}>
-        <Link to="/" className="nav-brand" style={{ textDecoration: 'none', color: 'inherit' }}>Verdant Hotel</Link>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ font: '500 12px Inter', letterSpacing: '.06em', color: 'var(--color-accent-300)', textTransform: 'uppercase' }}>foto ambiente — habitación / terraza</div>
-          <h2 style={{ maxWidth: 380, margin: 0 }}>"Únete y reserva tu próxima estadía en segundos."</h2>
+    <div className={styles.layout}>
+      <div className={styles.visual}>
+        <Link to="/" className={`nav-brand ${styles.brand}`}>Verdant Hotel</Link>
+        <div className={styles.quoteBlock}>
+          <div className={styles.caption}>foto ambiente — habitación / terraza</div>
+          <h2 className={styles.quote}>"Únete y reserva tu próxima estadía en segundos."</h2>
         </div>
       </div>
 
-      <div className="auth-form-wrap" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 40px' }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', width: '100%', maxWidth: 380 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <h2 style={{ margin: 0 }}>Crear cuenta</h2>
-            <p style={{ opacity: 0.7, margin: 0 }}>Regístrate para reservar y gestionar tu historial.</p>
+      <div className={styles.formWrap}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formHeader}>
+            <h2 className={styles.formTitle}>Crear cuenta</h2>
+            <p className={styles.formSubtitle}>Regístrate para reservar y gestionar tu historial.</p>
           </div>
 
           {error && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 'var(--space-3)', background: 'var(--color-accent-900)', border: '1px solid var(--color-accent-700)', borderRadius: 'var(--radius-md)', color: 'var(--color-accent-200)', fontSize: 13 }}>
-              <span style={{ fontWeight: 600 }}>!</span>{error}
+            <div className={styles.errorBox}>
+              <span className={styles.errorIcon}>!</span>{error}
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div className="auth-row-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+          <div className={styles.fields}>
+            <div className={styles.row2}>
               <div className="field"><label>Nombre</label><input className="input" type="text" placeholder="Ana" value={form.name} onChange={update('name')} required /></div>
               <div className="field"><label>Apellido</label><input className="input" type="text" placeholder="Torres" value={form.lastName} onChange={update('lastName')} required /></div>
             </div>
@@ -102,14 +100,14 @@ export default function Register() {
             </div>
           </div>
 
-          <label className="radio" style={{ fontSize: 13, opacity: 0.8 }}>
-            <input type="checkbox" required /><span className="dot" style={{ borderRadius: 'var(--radius-sm)' }} />
+          <label className={`radio ${styles.terms}`}>
+            <input type="checkbox" required /><span className={`dot ${styles.checkbox}`} />
             Acepto los <a href="#" onClick={(e) => e.preventDefault()}>términos y condiciones</a>
           </label>
 
-          <button type="submit" className="btn btn-primary btn-block" style={{ justifyContent: 'center' }}>Crear cuenta</button>
-          <div style={{ textAlign: 'center', fontSize: 13, opacity: 0.7 }}>
-            ¿Ya tienes cuenta? <Link to="/login" style={{ fontWeight: 500 }}>Inicia sesión</Link>
+          <button type="submit" className={`btn btn-primary btn-block ${styles.submit}`}>Crear cuenta</button>
+          <div className={styles.switch}>
+            ¿Ya tienes cuenta? <Link to="/login" className={styles.switchLink}>Inicia sesión</Link>
           </div>
         </form>
       </div>
