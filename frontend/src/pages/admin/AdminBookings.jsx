@@ -6,6 +6,7 @@ import { useTheme } from '../../context/ThemeContext.jsx';
 import { searchBookingsByClientName, markCheckIn, markCheckOut } from '../../api/bookings.js';
 import { fetchUsersByRol } from '../../api/users.js';
 import { fetchRooms } from '../../api/rooms.js';
+import styles from './AdminBookings.module.css';
 
 const statusTag = {
   Confirmada: 'tag tag-accent',
@@ -28,9 +29,9 @@ function calcNights(llegada, salida) {
 
 function DetailRow({ label, children }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-      <span style={{ opacity: 0.65 }}>{label}</span>
-      <span style={{ textAlign: 'right' }}>{children}</span>
+    <div className={styles.detailRow}>
+      <span className={styles.detailLabel}>{label}</span>
+      <span className={styles.detailValue}>{children}</span>
     </div>
   );
 }
@@ -193,35 +194,33 @@ export default function AdminBookings() {
   return (
     <div>
       <AdminNav />
-      <div style={{ padding: '36px 40px 60px', display: 'flex', flexDirection: 'column', gap: 22 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <h1 style={{ margin: 0 }}>Gestión de Reservas</h1>
-          <p style={{ opacity: 0.65, margin: 0, fontSize: 14 }}>
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Gestión de Reservas</h1>
+          <p className={styles.subtitle}>
             Busca las reservas de un cliente para registrar la entrada (check-in) o salida (check-out).
           </p>
         </div>
 
-        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <form onSubmit={handleSearch} className={styles.searchBar}>
           <input
-            className="input"
+            className={`input ${styles.nameInput}`}
             type="text"
             placeholder="Ej: Juan Pérez"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             aria-label="Nombre completo del cliente"
-            style={{ flex: '1 1 280px', maxWidth: 420 }}
           />
           <input
-            className="input"
+            className={`input ${styles.roomInput}`}
             type="number"
             min="1"
             placeholder="Nº habitación (opcional)"
             value={roomTerm}
             onChange={(e) => setRoomTerm(e.target.value)}
             aria-label="Número de habitación"
-            style={{ flex: '0 1 200px' }}
           />
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button type="submit" className={`btn btn-primary ${styles.searchButton}`} disabled={loading}>
             {loading ? 'Buscando...' : 'Buscar'}
           </button>
           {(searchedName || errorMsg) && (
@@ -232,100 +231,93 @@ export default function AdminBookings() {
         </form>
 
         {errorMsg && (
-          <div style={{
-            padding: '14px 18px',
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-accent-700)',
-            borderRadius: 'var(--radius-md)',
-            color: 'var(--color-accent-200)',
-            fontSize: 14,
-          }}>
+          <div className={styles.errorBox}>
             ⚠️ {errorMsg}
           </div>
         )}
 
         {searchedName && !loading && (
-          <p style={{ opacity: 0.65, margin: 0, fontSize: 14 }}>
+          <p className={styles.resultsInfo}>
             {bookings.length} reserva{bookings.length !== 1 ? 's' : ''} para "{searchedName}"
             {searchedRoom && ` en la habitación ${searchedRoom}`}
           </p>
         )}
 
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Reserva</th>
-              <th>Cliente</th>
-              <th>Habitación</th>
-              <th>Estado Habitación</th>
-              <th>Fechas</th>
-              <th>Total</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={7}>Buscando reservas...</td></tr>
-            ) : !searchedName ? (
-              <tr><td colSpan={7} style={{ opacity: 0.7 }}>Ingresa el nombre de un cliente para ver sus reservas.</td></tr>
-            ) : bookings.length === 0 ? (
-              <tr><td colSpan={7} style={{ opacity: 0.7 }}>
-                {searchedRoom
-                  ? `El cliente no tiene una reserva activa para la habitación ${searchedRoom}.`
-                  : 'No se encontraron reservas confirmadas para este cliente.'}
-              </td></tr>
-            ) : (
-              bookings.map((b) => {
-                const nights = calcNights(b.fechaLlegada, b.fechaSalida);
-                const roomState = roomsByNumber[b.numHabitacion]?.estadoActual;
-                const canCheckOut = roomState === 'Ocupada';
-                return (
-                  <tr
-                    key={b.id}
-                    onClick={() => setSelected(b)}
-                    title={canCheckOut ? 'Hacer clic para marcar salida' : 'Hacer clic para marcar entrada'}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <td>#{b.id}</td>
-                    <td>{clientsById[b.idUsuario] ?? `Cliente #${b.idUsuario}`}</td>
-                    <td><strong>Habitación {b.numHabitacion}</strong></td>
-                    <td>
-                      <span className={roomState === 'Disponible' ? 'tag tag-accent' : roomState === 'Ocupada' ? 'tag tag-neutral' : 'tag tag-outline'}>
-                        {roomState ?? '—'}
-                      </span>
-                    </td>
-                    <td>
-                      {formatDate(b.fechaLlegada)} → {formatDate(b.fechaSalida)}
-                      <span style={{ opacity: 0.6 }}> · {nights} noche{nights !== 1 ? 's' : ''}</span>
-                    </td>
-                    <td>{getTotal(b)}</td>
-                    <td>
-                      {canCheckOut ? (
-                        <button
-                          type="button"
-                          className="btn btn-secondary"
-                          style={{ fontSize: 13, padding: '4px 10px' }}
-                          onClick={(e) => { e.stopPropagation(); setSelected(b); }}
-                        >
-                          Marcar salida
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          style={{ fontSize: 13, padding: '4px 10px' }}
-                          onClick={(e) => { e.stopPropagation(); setSelected(b); }}
-                        >
-                          Marcar entrada
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+        <div className={styles.tableCard}>
+          <table className={`table ${styles.table}`}>
+            <thead>
+              <tr>
+                <th>Reserva</th>
+                <th>Cliente</th>
+                <th>Habitación</th>
+                <th>Estado Habitación</th>
+                <th>Fechas</th>
+                <th>Total</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={7} className={styles.messageCell}>Buscando reservas...</td></tr>
+              ) : !searchedName ? (
+                <tr><td colSpan={7} className={styles.messageCell}>Ingresa el nombre de un cliente para ver sus reservas.</td></tr>
+              ) : bookings.length === 0 ? (
+                <tr><td colSpan={7} className={styles.messageCell}>
+                  {searchedRoom
+                    ? `El cliente no tiene una reserva activa para la habitación ${searchedRoom}.`
+                    : 'No se encontraron reservas confirmadas para este cliente.'}
+                </td></tr>
+              ) : (
+                bookings.map((b) => {
+                  const nights = calcNights(b.fechaLlegada, b.fechaSalida);
+                  const roomState = roomsByNumber[b.numHabitacion]?.estadoActual;
+                  const canCheckOut = roomState === 'Ocupada';
+                  return (
+                    <tr
+                      key={b.id}
+                      onClick={() => setSelected(b)}
+                      title={canCheckOut ? 'Hacer clic para marcar salida' : 'Hacer clic para marcar entrada'}
+                      className={styles.clickableRow}
+                    >
+                      <td className={styles.muted}>#{b.id}</td>
+                      <td>{clientsById[b.idUsuario] ?? `Cliente #${b.idUsuario}`}</td>
+                      <td><strong>Habitación {b.numHabitacion}</strong></td>
+                      <td>
+                        <span className={roomState === 'Disponible' ? 'tag tag-accent' : roomState === 'Ocupada' ? 'tag tag-neutral' : 'tag tag-outline'}>
+                          {roomState ?? '—'}
+                        </span>
+                      </td>
+                      <td>
+                        {formatDate(b.fechaLlegada)} → {formatDate(b.fechaSalida)}
+                        <span className={styles.muted}> · {nights} noche{nights !== 1 ? 's' : ''}</span>
+                      </td>
+                      <td className={styles.numeric}>{getTotal(b)}</td>
+                      <td>
+                        {canCheckOut ? (
+                          <button
+                            type="button"
+                            className={`btn btn-secondary ${styles.rowButton}`}
+                            onClick={(e) => { e.stopPropagation(); setSelected(b); }}
+                          >
+                            Marcar salida
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className={`btn btn-primary ${styles.rowButton}`}
+                            onClick={(e) => { e.stopPropagation(); setSelected(b); }}
+                          >
+                            Marcar entrada
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {selected && (
@@ -359,14 +351,13 @@ export default function AdminBookings() {
             )}
           </>}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className={styles.details}>
             <DetailRow label="Cliente">{clientsById[selected.idUsuario] ?? `Cliente #${selected.idUsuario}`}</DetailRow>
             <DetailRow label="Habitación">
               {selected.numHabitacion}
               {selectedRoomState && (
                 <span
-                  className={isAvailable ? 'tag tag-accent' : isOccupied ? 'tag tag-neutral' : 'tag tag-outline'}
-                  style={{ marginLeft: 8 }}
+                  className={`${isAvailable ? 'tag tag-accent' : isOccupied ? 'tag tag-neutral' : 'tag tag-outline'} ${styles.inlineTag}`}
                 >
                   {selectedRoomState}
                 </span>
@@ -375,7 +366,7 @@ export default function AdminBookings() {
             <DetailRow label="Llegada">{formatDate(selected.fechaLlegada)}</DetailRow>
             <DetailRow label="Salida">{formatDate(selected.fechaSalida)}</DetailRow>
             <DetailRow label="Total">{getTotal(selected)}</DetailRow>
-            <p style={{ margin: '6px 0 0', opacity: 0.8, fontSize: 14 }}>
+            <p className={styles.detailNote}>
               {isOccupied
                 ? 'El huésped ya ingresó. Al marcar la salida, la reserva pasará a Completada y la habitación volverá a estar Disponible.'
                 : isAvailable

@@ -10,6 +10,7 @@ import {
   deleteRoomImage,
   BACKEND_URL_BASE
 } from '../../api/rooms.js';
+import styles from './AdminRoomForm.module.css';
 import Swal from 'sweetalert2';
 import { useTheme } from '../../context/ThemeContext.jsx';
 
@@ -159,7 +160,7 @@ export default function AdminRoomForm() {
     return (
       <div>
         <AdminNav />
-        <div style={{ padding: '36px 40px 60px', maxWidth: 640, width: '100%', margin: '0 auto', textAlign: 'center', opacity: 0.7 }}>
+        <div className={styles.status}>
           Cargando datos de la habitación...
         </div>
       </div>
@@ -169,15 +170,15 @@ export default function AdminRoomForm() {
   return (
     <div>
       <AdminNav />
-      <div style={{ padding: '36px 40px 60px', display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 640, width: '100%', margin: '0 auto' }}>
-        <div style={{ fontSize: 13, opacity: 0.6 }}>
-          <span style={{ cursor: 'pointer' }} onClick={() => navigate('/admin/habitaciones')}>Habitaciones</span>{' '}
-          <span style={{ opacity: 0.5 }}>/</span> <span style={{ opacity: 1, fontWeight: 500 }}>{isEdit ? 'Editar habitación' : 'Nueva habitación'}</span>
+      <div className={styles.page}>
+        <div className={styles.breadcrumb}>
+          <button type="button" className={styles.breadcrumbLink} onClick={() => navigate('/admin/habitaciones')}>Habitaciones</button>{' '}
+          <span className={styles.breadcrumbSep}>/</span> <span className={styles.breadcrumbCurrent}>{isEdit ? 'Editar habitación' : 'Nueva habitación'}</span>
         </div>
-        <h1 style={{ margin: 0 }}>{isEdit ? 'Editar habitación' : 'Nueva habitación'}</h1>
+        <h1 className={styles.title}>{isEdit ? 'Editar habitación' : 'Nueva habitación'}</h1>
 
-        <form className="card elev-sm" style={{ padding: 'var(--space-6)', gap: 'var(--space-4)', border: '1px solid var(--color-divider)' }} onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+        <form className={`card ${styles.form}`} onSubmit={handleSubmit}>
+          <div className={styles.row2}>
             <div className="field">
               <label>Número de habitación</label>
               <input
@@ -204,9 +205,9 @@ export default function AdminRoomForm() {
 
           <div className="field">
             <label>Tipo de habitación</label>
-            <div className="seg">
+            <div className={`seg ${styles.segmented}`}>
               {['INDIVIDUAL', 'FAMILIAR'].map((t) => (
-                <label className="seg-opt" key={t}>
+                <label className={`seg-opt ${styles.segOption}`} key={t}>
                   <input
                     type="radio"
                     name="tipo"
@@ -235,7 +236,7 @@ export default function AdminRoomForm() {
           <div className="field">
             <label>Descripción</label>
             <textarea
-              className="input"
+              className={`input ${styles.textarea}`}
               placeholder="Describe la habitación, vistas, comodidades…"
               value={form.description}
               onChange={update('description')}
@@ -248,70 +249,29 @@ export default function AdminRoomForm() {
 
             {/* Fotos existentes en modo edición */}
             {isEdit && (
-              <div style={{ marginBottom: 'var(--space-3)' }}>
-                <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 'var(--space-2)' }}>
+              <div className={styles.photoGroup}>
+                <div className={styles.photoCaption}>
                   {existingImages.length > 0
                     ? `Fotos actuales (${existingImages.length}):`
                     : 'No hay fotos actuales registradas.'}
                 </div>
                 {existingImages.length > 0 && (
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-                      gap: 'var(--space-3)',
-                    }}
-                  >
+                  <div className={styles.photoGrid}>
                     {existingImages.map((img) => (
                       <div
                         key={img.id}
-                        style={{
-                          position: 'relative',
-                          width: '100%',
-                          paddingTop: '100%',
-                          borderRadius: 'var(--radius-sm)',
-                          overflow: 'hidden',
-                          border: '1px solid var(--color-divider)',
-                          background: 'var(--color-surface)',
-                        }}
+                        className={styles.photo}
                       >
                         <img
                           src={`${BACKEND_URL_BASE}/${img.ruta}/${img.nombre}`}
                           alt={`Foto ${img.id}`}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
+                          className={styles.photoImage}
                         />
                         <button
                           type="button"
                           title="Eliminar foto"
                           onClick={() => handleRemoveExistingImage(img.id)}
-                          style={{
-                            position: 'absolute',
-                            top: 4,
-                            right: 4,
-                            width: 22,
-                            height: 22,
-                            borderRadius: '50%',
-                            background: 'rgba(0, 0, 0, 0.75)',
-                            color: '#fff',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 14,
-                            lineHeight: 1,
-                            padding: 0,
-                            transition: 'background 0.15s ease',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = '#e53e3e')}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.75)')}
+                          className={styles.removeButton}
                         >
                           ×
                         </button>
@@ -324,80 +284,38 @@ export default function AdminRoomForm() {
 
             {/* Input de archivo */}
             <input
-              className="input"
+              className={`input ${styles.fileInput}`}
               type="file"
               accept="image/*"
               multiple
               onChange={handleImageChange}
               required={!isEdit && imageFiles.length === 0}
-              style={{ padding: 10, borderRadius: 'var(--radius-sm)' }}
             />
 
             {/* Nuevas fotos seleccionadas */}
             {imageFiles.length > 0 && (
-              <div style={{ marginTop: 'var(--space-3)' }}>
-                <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 'var(--space-2)' }}>
+              <div className={styles.newPhotos}>
+                <div className={styles.photoCaption}>
                   {isEdit ? 'Nuevas fotos por subir' : 'Fotos seleccionadas'} ({imageFiles.length}):
                 </div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-                    gap: 'var(--space-3)',
-                  }}
-                >
+                <div className={styles.photoGrid}>
                   {imageFiles.map((file, idx) => {
                     const previewUrl = URL.createObjectURL(file);
                     return (
                       <div
                         key={`${file.name}-${idx}`}
-                        style={{
-                          position: 'relative',
-                          width: '100%',
-                          paddingTop: '100%',
-                          borderRadius: 'var(--radius-sm)',
-                          overflow: 'hidden',
-                          border: '1px solid var(--color-accent)',
-                          background: 'var(--color-surface)',
-                        }}
+                        className={`${styles.photo} ${styles.photoNew}`}
                       >
                         <img
                           src={previewUrl}
                           alt={file.name}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
+                          className={styles.photoImage}
                         />
                         <button
                           type="button"
                           title="Quitar de la selección"
                           onClick={() => handleRemoveNewImage(idx)}
-                          style={{
-                            position: 'absolute',
-                            top: 4,
-                            right: 4,
-                            width: 22,
-                            height: 22,
-                            borderRadius: '50%',
-                            background: 'rgba(0, 0, 0, 0.75)',
-                            color: '#fff',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 14,
-                            lineHeight: 1,
-                            padding: 0,
-                            transition: 'background 0.15s ease',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = '#e53e3e')}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.75)')}
+                          className={styles.removeButton}
                         >
                           ×
                         </button>
@@ -409,7 +327,7 @@ export default function AdminRoomForm() {
             )}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', paddingTop: 'var(--space-2)' }}>
+          <div className={styles.actions}>
             <button
               type="button"
               className="btn btn-secondary"

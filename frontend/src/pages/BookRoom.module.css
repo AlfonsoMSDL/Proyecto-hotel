@@ -1,0 +1,398 @@
+/* — Estados de carga / no encontrada — */
+.status {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-14) var(--gutter);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.status h2 {
+  color: var(--color-text);
+}
+
+.statusAction {
+  margin-top: var(--space-4);
+}
+
+/* — Contenedor — */
+.page {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-8) var(--gutter) var(--space-18);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  min-height: var(--control-height-sm);
+  padding: var(--space-2) var(--space-3);
+  margin-left: calc(var(--space-3) * -1);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 680px;
+}
+
+.title {
+  margin: 0;
+  font-size: 40px;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--fs-base);
+  color: var(--color-text-muted);
+}
+
+.errorBox {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: var(--fs-md);
+}
+
+/* — Layout: calendario + resumen — */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.panel {
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+/* — Calendario — */
+.monthBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.monthButton {
+  width: var(--control-height-sm);
+  padding: 0;
+  font-size: var(--fs-base);
+}
+
+.monthLabel {
+  font-family: var(--font-heading);
+  font-size: var(--fs-xl);
+  font-weight: var(--font-heading-weight);
+}
+
+.weekDays,
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.weekDay {
+  padding: var(--space-1) 0;
+  text-align: center;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.emptyDay {
+  height: 44px;
+}
+
+.day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.day:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.day:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.dayPast {
+  background: transparent;
+  border-color: transparent;
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.dayBooked {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.daySelected,
+.daySelected:hover:not(:disabled) {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: var(--fw-bold);
+}
+
+.dayInRange {
+  background: var(--color-accent-soft);
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  color: var(--color-accent-strong);
+}
+
+/* — Leyenda — */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.swatchAvailable {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.swatchBooked {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+}
+
+.swatchSelected {
+  background: var(--color-accent);
+}
+
+/* — Resumen de la reserva — */
+.summary {
+  position: sticky;
+  top: 88px;
+}
+
+.roomPreview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.roomThumb {
+  width: 84px;
+  height: 84px;
+  flex: none;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.roomThumbEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-sunken);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.roomMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.roomName {
+  margin: 0;
+  font-size: var(--fs-xl);
+}
+
+.roomTag {
+  width: fit-content;
+}
+
+.roomCapacity {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+.dateFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.fieldLabel {
+  font-weight: var(--fw-semibold);
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--fs-md);
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.breakdownRow > span:last-child {
+  color: var(--color-text);
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+.totalValue {
+  color: var(--color-accent);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.confirmButton {
+  width: 100%;
+  min-height: 48px;
+  font-size: var(--fs-base);
+}
+
+.note {
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* — Responsive — */
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .summary {
+    position: static;
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding-top: var(--space-6);
+  }
+
+  .title {
+    font-size: var(--fs-3xl);
+  }
+
+  .panel {
+    padding: var(--space-4);
+  }
+
+  .weekDays,
+  .daysGrid {
+    gap: var(--space-1);
+  }
+
+  .day,
+  .emptyDay {
+    height: 40px;
+  }
+
+  .day {
+    font-size: var(--fs-sm);
+  }
+
+  .dateFields {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day {
+    transition: none;
+  }
+}

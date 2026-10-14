@@ -5,6 +5,7 @@ import { fetchRoomById, getRoomFirstImage, BACKEND_URL_BASE } from '../api/rooms
 import { fetchRoomBookings, createBooking } from '../api/bookings.js';
 import Swal from 'sweetalert2';
 import { useTheme } from '../context/ThemeContext.jsx';
+import styles from './BookRoom.module.css';
 
 const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -226,7 +227,7 @@ export default function BookRoom() {
     return (
       <div>
         <ClientNav />
-        <div style={{ padding: '60px 40px', textAlign: 'center', opacity: 0.7 }}>
+        <div className={styles.status}>
           Cargando disponibilidad de la habitación...
         </div>
       </div>
@@ -237,15 +238,16 @@ export default function BookRoom() {
     return (
       <div>
         <ClientNav />
-        <div style={{ padding: '60px 40px', textAlign: 'center' }}>
+        <div className={styles.status}>
           <h2>Habitación no encontrada</h2>
-          <Link to="/" className="btn btn-secondary" style={{ marginTop: 16 }}>
+          <Link to="/" className={`btn btn-secondary ${styles.statusAction}`}>
             Volver al catálogo
           </Link>
         </div>
       </div>
     );
   }
+
 
   // Construcción de la matriz de días para el mes visible
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
@@ -268,77 +270,66 @@ export default function BookRoom() {
     <div>
       <ClientNav />
 
-      <main style={{ maxWidth: 1240, margin: '0 auto', padding: '36px 40px 64px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <main className={styles.page}>
         {/* Enlace para volver */}
         <Link
           to={`/habitacion/${roomId}`}
-          style={{ textDecoration: 'none', color: 'var(--color-text)', opacity: 0.75, width: 'fit-content' }}
+          className={styles.backLink}
         >
           ← Volver al detalle de la habitación
         </Link>
 
-        <div>
-          <h1 style={{ margin: '0 0 8px' }}>Reservar Habitación {room.numero}</h1>
-          <p style={{ margin: 0, opacity: 0.75, fontSize: 15 }}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Reservar Habitación {room.numero}</h1>
+          <p className={styles.subtitle}>
             Selecciona las fechas de tu estadía en el calendario. Las fechas ocupadas se encuentran bloqueadas.
           </p>
         </div>
 
         {selectionError && (
-          <div
-            style={{
-              padding: '12px 16px',
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-accent-700)',
-              borderRadius: 'var(--radius-md)',
-              color: 'var(--color-accent-200)',
-              fontSize: 14,
-            }}
-          >
+          <div className={styles.errorBox}>
             ⚠️ {selectionError}
           </div>
         )}
 
         {/* Layout Principal: Calendario + Resumen de Reserva */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32, alignItems: 'start' }}>
+        <div className={styles.layout}>
           
           {/* Columna Izquierda: Calendario Interactivo */}
-          <div className="card elev-sm" style={{ padding: '28px 24px', border: '1px solid var(--color-divider)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className={`card ${styles.panel}`}>
             {/* Cabecera del mes y controles */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className={styles.monthBar}>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className={`btn btn-secondary ${styles.monthButton}`}
                 onClick={handlePrevMonth}
-                style={{ padding: '6px 12px', fontSize: 14 }}
               >
                 ←
               </button>
-              <div style={{ fontWeight: 600, fontSize: 16 }}>
+              <div className={styles.monthLabel}>
                 {MONTH_NAMES[currentMonth]} {currentYear}
               </div>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className={`btn btn-secondary ${styles.monthButton}`}
                 onClick={handleNextMonth}
-                style={{ padding: '6px 12px', fontSize: 14 }}
               >
                 →
               </button>
             </div>
 
             {/* Días de la semana */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, textAlign: 'center', fontWeight: 600, fontSize: 12, opacity: 0.7 }}>
+            <div className={styles.weekDays}>
               {DAY_NAMES.map((name) => (
-                <div key={name} style={{ padding: '4px 0' }}>{name}</div>
+                <div key={name} className={styles.weekDay}>{name}</div>
               ))}
             </div>
 
             {/* Matriz de Días del Mes */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
+            <div className={styles.daysGrid}>
               {calendarCells.map((dateStr, idx) => {
                 if (!dateStr) {
-                  return <div key={`empty-${idx}`} style={{ height: 40 }} />;
+                  return <div key={`empty-${idx}`} className={styles.emptyDay} />;
                 }
 
                 const dayNumber = parseInt(dateStr.substring(8, 10), 10);
@@ -348,30 +339,18 @@ export default function BookRoom() {
                 const isCheckOut = dateStr === checkOutDate;
                 const isInRange = checkInDate && checkOutDate && dateStr > checkInDate && dateStr < checkOutDate;
 
-                // Definir estilos según estado del día
-                let background = 'var(--color-surface)';
-                let color = 'var(--color-text)';
-                let border = '1px solid var(--color-divider)';
-                let cursor = 'pointer';
-                let opacity = 1;
+                // Clase visual según estado del día (misma prioridad que antes:
+                // pasada > ocupada > llegada/salida > dentro del rango)
+                let dayStateClass = '';
 
                 if (isPast) {
-                  opacity = 0.3;
-                  cursor = 'not-allowed';
-                  background = 'transparent';
+                  dayStateClass = styles.dayPast;
                 } else if (isBooked) {
-                  opacity = 0.45;
-                  cursor = 'not-allowed';
-                  background = 'rgba(239, 68, 68, 0.15)';
-                  border = '1px solid rgba(239, 68, 68, 0.35)';
-                  color = '#fca5a5';
+                  dayStateClass = styles.dayBooked;
                 } else if (isCheckIn || isCheckOut) {
-                  background = 'var(--color-accent)';
-                  color = '#fff';
-                  border = '1px solid var(--color-accent)';
+                  dayStateClass = styles.daySelected;
                 } else if (isInRange) {
-                  background = 'color-mix(in srgb, var(--color-accent) 22%, transparent)';
-                  border = '1px solid var(--color-accent-600)';
+                  dayStateClass = styles.dayInRange;
                 }
 
                 return (
@@ -387,23 +366,7 @@ export default function BookRoom() {
                         ? 'Fecha pasada'
                         : `Seleccionar ${dateStr}`
                     }
-                    style={{
-                      height: 40,
-                      borderRadius: 'var(--radius-sm)',
-                      border,
-                      background,
-                      color,
-                      opacity,
-                      cursor,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 13,
-                      fontWeight: (isCheckIn || isCheckOut) ? 700 : 500,
-                      position: 'relative',
-                      transition: 'all 0.15s ease',
-                      padding: 0,
-                    }}
+                    className={`${styles.day} ${dayStateClass}`}
                   >
                     {dayNumber}
                   </button>
@@ -412,54 +375,54 @@ export default function BookRoom() {
             </div>
 
             {/* Leyenda del Calendario */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, borderTop: '1px solid var(--color-divider)', paddingTop: 16, fontSize: 12, opacity: 0.85 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 12, height: 12, borderRadius: 2, background: 'var(--color-surface)', border: '1px solid var(--color-divider)' }} />
+            <div className={styles.legend}>
+              <div className={styles.legendItem}>
+                <span className={`${styles.swatch} ${styles.swatchAvailable}`} />
                 <span>Disponible</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 12, height: 12, borderRadius: 2, background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)' }} />
+              <div className={styles.legendItem}>
+                <span className={`${styles.swatch} ${styles.swatchBooked}`} />
                 <span>Ocupada</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 12, height: 12, borderRadius: 2, background: 'var(--color-accent)' }} />
+              <div className={styles.legendItem}>
+                <span className={`${styles.swatch} ${styles.swatchSelected}`} />
                 <span>Tu selección</span>
               </div>
             </div>
           </div>
 
           {/* Columna Derecha: Tarjeta de Confirmación y Resumen */}
-          <div className="card elev-sm" style={{ padding: '28px 24px', border: '1px solid var(--color-divider)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className={`card ${styles.panel} ${styles.summary}`}>
             {/* Vista previa de la habitación */}
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <div className={styles.roomPreview}>
               {firstPhoto ? (
                 <img
                   src={`${BACKEND_URL_BASE}/${firstPhoto.ruta}/${firstPhoto.nombre}`}
                   alt={`Habitación ${room.numero}`}
-                  style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 'var(--radius-md)' }}
+                  className={styles.roomThumb}
                 />
               ) : (
-                <div style={{ width: 80, height: 80, borderRadius: 'var(--radius-md)', background: 'var(--color-surface)', border: '1px solid var(--color-divider)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, opacity: 0.6 }}>
+                <div className={`${styles.roomThumb} ${styles.roomThumbEmpty}`}>
                   Sin imagen
                 </div>
               )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <h3 style={{ margin: 0, fontSize: 18 }}>Habitación {room.numero}</h3>
-                <span className="tag tag-accent" style={{ width: 'fit-content', fontSize: 11 }}>
+              <div className={styles.roomMeta}>
+                <h3 className={styles.roomName}>Habitación {room.numero}</h3>
+                <span className={`tag tag-accent ${styles.roomTag}`}>
                   {room.tipoHabitacion}
                 </span>
-                <span style={{ fontSize: 13, opacity: 0.7 }}>
+                <span className={styles.roomCapacity}>
                   Capacidad: {room.capacidad} personas
                 </span>
               </div>
             </div>
 
-            <div style={{ height: 1, background: 'var(--color-divider)' }} />
+            <div className={styles.divider} />
 
             {/* Inputs de fecha manual / sincronizados con el calendario */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className={styles.dateFields}>
               <div className="field">
-                <label style={{ fontSize: 12, fontWeight: 600 }}>Fecha de llegada</label>
+                <label className={styles.fieldLabel}>Fecha de llegada</label>
                 <input
                   className="input"
                   type="date"
@@ -471,11 +434,10 @@ export default function BookRoom() {
                       setCheckOutDate('');
                     }
                   }}
-                  style={{ padding: '8px 10px', fontSize: 13 }}
                 />
               </div>
               <div className="field">
-                <label style={{ fontSize: 12, fontWeight: 600 }}>Fecha de salida</label>
+                <label className={styles.fieldLabel}>Fecha de salida</label>
                 <input
                   className="input"
                   type="date"
@@ -489,41 +451,39 @@ export default function BookRoom() {
                     setSelectionError('');
                     setCheckOutDate(e.target.value);
                   }}
-                  style={{ padding: '8px 10px', fontSize: 13 }}
                 />
               </div>
             </div>
 
-            <div style={{ height: 1, background: 'var(--color-divider)' }} />
+            <div className={styles.divider} />
 
             {/* Desglose de precios */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.85 }}>
+            <div className={styles.breakdown}>
+              <div className={styles.breakdownRow}>
                 <span>Precio por noche:</span>
                 <span>${room.precioNoche.toLocaleString()}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.85 }}>
+              <div className={styles.breakdownRow}>
                 <span>Noches seleccionadas:</span>
                 <span>{nights} noche{nights === 1 ? '' : 's'}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, fontSize: 18, borderTop: '1px solid var(--color-divider)', paddingTop: 12, marginTop: 4 }}>
+              <div className={styles.totalRow}>
                 <span>Total:</span>
-                <span style={{ color: 'var(--color-accent)' }}>${totalPrice.toLocaleString()}</span>
+                <span className={styles.totalValue}>${totalPrice.toLocaleString()}</span>
               </div>
             </div>
 
             {/* Botón de Confirmación */}
             <button
               type="button"
-              className="btn btn-primary"
+              className={`btn btn-primary ${styles.confirmButton}`}
               disabled={!checkInDate || !checkOutDate || nights === 0 || submitting}
               onClick={handleConfirmBooking}
-              style={{ width: '100%', padding: '12px 20px', fontSize: 15, fontWeight: 600 }}
             >
               {submitting ? 'Procesando reserva...' : 'Confirmar Reserva'}
             </button>
 
-            <div style={{ fontSize: 12, opacity: 0.65, textAlign: 'center', lineHeight: 1.4 }}>
+            <div className={styles.note}>
               Confirmación inmediata. Al reservar, tu estadía quedará registrada y podrás gestionarla desde tu perfil.
             </div>
           </div>

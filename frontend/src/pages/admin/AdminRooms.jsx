@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminNav from '../../components/AdminNav.jsx';
 import Swal from 'sweetalert2';
 import { fetchRooms, deleteRoom } from '../../api/rooms.js';
+import styles from './AdminRooms.module.css';
 
 const statusTag = {
   Disponible: 'tag tag-accent',
@@ -64,63 +65,64 @@ export default function AdminRooms() {
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={styles.root}>
       <AdminNav />
-      <div style={{ padding: '36px 40px 60px', display: 'flex', flexDirection: 'column', gap: 22 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <h1 style={{ margin: 0 }}>Habitaciones</h1>
-            <p style={{ opacity: 0.65, margin: 0, fontSize: 14 }}>{totalElements} habitaciones registradas</p>
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <div className={styles.headerText}>
+            <h1 className={styles.title}>Habitaciones</h1>
+            <p className={styles.subtitle}>{totalElements} habitaciones registradas</p>
           </div>
-          <button className="btn btn-primary" onClick={() => navigate('/admin/habitaciones/nueva')}>+ Nueva habitación</button>
+          <button className={`btn btn-primary ${styles.newButton}`} onClick={() => navigate('/admin/habitaciones/nueva')}>+ Nueva habitación</button>
         </div>
 
-        <table className="table">
-          <thead>
-            <tr>
-              <th>N.º</th>
-              <th>Tipo</th>
-              <th>Capacidad</th>
-              <th>Precio/noche</th>
-              <th>Estado actual</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={6}>Cargando...</td></tr>
-            ) : rooms.length === 0 ? (
-              <tr><td colSpan={6}>No hay habitaciones registradas</td></tr>
-            ) : (
-              rooms.map((room) => (
-                <tr key={room.id}>
-                  <td>{room.numero}</td>
-                  <td>{room.tipoHabitacion}</td>
-                  <td>{room.capacidad}</td>
-                  <td>${room.precioNoche}</td>
-                  <td><span className={statusTag[room.estadoActual] || 'tag tag-neutral'}>{room.estadoActual}</span></td>
-                  <td style={{ textAlign: 'left' }}>
-                    <button className="btn btn-ghost" onClick={() => navigate(`/admin/habitaciones/${room.id}`)}>Editar</button>{' '}
-                    <button className="btn btn-ghost" style={{ color: '#e07a7a' }} onClick={() => confirmDeleteRoom(room)}>Eliminar</button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <div className={styles.tableCard}>
+          <table className={`table ${styles.table}`}>
+            <thead>
+              <tr>
+                <th>N.º</th>
+                <th>Tipo</th>
+                <th className={styles.numeric}>Capacidad</th>
+                <th className={styles.numeric}>Precio/noche</th>
+                <th>Estado actual</th>
+                <th className={styles.actionsCell}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={6} className={styles.messageCell}>Cargando...</td></tr>
+              ) : rooms.length === 0 ? (
+                <tr><td colSpan={6} className={styles.messageCell}>No hay habitaciones registradas</td></tr>
+              ) : (
+                rooms.map((room) => (
+                  <tr key={room.id}>
+                    <td className={styles.roomNumber}>{room.numero}</td>
+                    <td>{room.tipoHabitacion}</td>
+                    <td className={styles.numeric}>{room.capacidad}</td>
+                    <td className={styles.numeric}>${room.precioNoche}</td>
+                    <td><span className={statusTag[room.estadoActual] || 'tag tag-neutral'}>{room.estadoActual}</span></td>
+                    <td className={styles.actionsCell}>
+                      <button className="btn btn-ghost" onClick={() => navigate(`/admin/habitaciones/${room.id}`)}>Editar</button>{' '}
+                      <button className={`btn btn-ghost ${styles.deleteButton}`} onClick={() => confirmDeleteRoom(room)}>Eliminar</button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {totalPages > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ opacity: 0.75, fontSize: 14 }}>
+          <div className={styles.pagination}>
+            <div className={styles.pageInfo}>
               Mostrando {rooms.length} de {totalElements} habitaciones · Página {page + 1} de {totalPages}
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className={styles.pageButtons}>
               <button className="btn btn-secondary" disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index}
-                  className={index === page ? 'btn btn-primary' : 'btn btn-secondary'}
-                  style={{ minWidth: 40 }}
+                  className={`${index === page ? 'btn btn-primary' : 'btn btn-secondary'} ${styles.pageButton}`}
                   onClick={() => setPage(index)}
                 >
                   {index + 1}

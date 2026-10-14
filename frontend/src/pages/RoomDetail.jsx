@@ -4,6 +4,7 @@ import ClientNav from '../components/ClientNav.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { fetchRoomById, getRoomImages } from '../api/rooms.js'
+import styles from './RoomDetail.module.css';
 
 export default function RoomDetail() {
   const { id } = useParams();
@@ -53,12 +54,7 @@ export default function RoomDetail() {
     return (
       <>
         <ClientNav />
-        <div
-          style={{
-            padding: '56px 40px',
-            textAlign: 'center'
-          }}
-        >
+        <div className={styles.status}>
           Cargando habitación...
         </div>
       </>
@@ -69,12 +65,7 @@ export default function RoomDetail() {
     return (
       <>
         <ClientNav />
-        <div
-          style={{
-            padding: '56px 40px',
-            textAlign: 'center'
-          }}
-        >
+        <div className={styles.status}>
           No fue posible cargar la habitación.
         </div>
       </>
@@ -85,91 +76,31 @@ export default function RoomDetail() {
     <>
       <ClientNav />
 
-      <main
-        style={{
-          maxWidth: 1250,
-          margin: '0 auto',
-          padding: '48px 40px 64px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 32
-        }}
-      >
-        <Link
-          to="/"
-          style={{
-            textDecoration: 'none',
-            color: 'var(--color-text)',
-            opacity: .75,
-            width: 'fit-content'
-          }}
-        >
+      <main className={styles.page}>
+        <Link to="/" className={styles.backLink}>
           ← Volver al catálogo
         </Link>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1.2fr 1fr',
-            gap: 32,
-            alignItems: 'stretch',
-            
-          }}
-        >
+        <div className={styles.topGrid}>
 
           {/* Imágenes */}
 
-          <div
-            className="card elev-sm"
-            style={{
-              border: '1px solid var(--color-divider)',
-              padding: 'var(--space-4)',
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'stretch',
-              gap: 20
-            }}
-          >
+          <div className={`card ${styles.gallery}`}>
 
             {/* Miniaturas */}
 
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                gap: 10,
-                width: 90,
-                maxHeight: 500,
-                overflowY: 'auto',
-                flexShrink: 0
-              }}
-            >
+            <div className={styles.thumbs}>
               {images.map((img, index) => (
                 <button
                   key={img.id}
                   onClick={() => setSelectedImage(index)}
-                  style={{
-                    padding: 0,
-                    cursor: 'pointer',
-                    overflow: 'hidden',
-                    background: 'transparent',
-                    border:
-                      selectedImage === index
-                        ? '2px solid var(--color-accent)'
-                        : '1px solid var(--color-divider)',
-                    borderRadius: 8
-                  }}
+                  className={`${styles.thumb} ${selectedImage === index ? styles.thumbActive : ''}`}
+                  aria-label={`Ver imagen ${index + 1}`}
                 >
                   <img
                     src={getImageUrl(img)}
                     alt=""
-                    style={{
-                      width: '100%',
-                      height: 70,
-                      objectFit: 'cover',
-                      display: 'block'
-                    }}
+                    className={styles.thumbImage}
                   />
                 </button>
               ))}
@@ -177,39 +108,15 @@ export default function RoomDetail() {
 
             {/* Imagen principal */}
 
-            <div
-              style={{
-                flex: 1,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: 500
-              }}
-            >
+            <div className={styles.mainImageWrap}>
               {images.length > 0 ? (
                 <img
                   src={getImageUrl(images[selectedImage])}
                   alt=""
-                  style={{
-                    width: '100%',
-                    maxHeight: 500,
-                    objectFit: 'contain',
-                    borderRadius: 10
-                  }}
+                  className={styles.mainImage}
                 />
               ) : (
-                <div
-                  style={{
-                    width: '100%',
-                    height: 500,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    background:
-                      'repeating-linear-gradient(45deg, var(--color-neutral-900), var(--color-neutral-900) 10px, var(--color-neutral-800) 10px, var(--color-neutral-800) 20px)',
-                    color: 'var(--color-neutral-500)'
-                  }}
-                >
+                <div className={styles.noImage}>
                   Sin imágenes disponibles
                 </div>
               )}
@@ -219,83 +126,40 @@ export default function RoomDetail() {
 
           {/* Información */}
 
-          <div
-            className="card elev-sm"
-            style={{
-              border: '1px solid var(--color-divider)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 22
-            }}
-          >
-            <div>
+          <div className={`card ${styles.info}`}>
+            <div className={styles.infoHeader}>
               <span
                 className={
                   room.tipoHabitacion === 'Familiar'
-                    ? 'tag tag-accent'
-                    : 'tag tag-neutral'
+                    ? 'tag tag-accent-2'
+                    : 'tag tag-accent'
                 }
               >
                 {room.tipoHabitacion}
               </span>
 
-              <h1
-                style={{
-                  margin: '14px 0 6px'
-                }}
-              >
+              <h1 className={styles.title}>
                 Habitación {room.numero}
               </h1>
 
-              <div
-                style={{
-                  fontSize: 15,
-                  opacity: .75
-                }}
-              >
+              <div className={styles.lead}>
                 Ideal para una estancia cómoda y agradable.
               </div>
             </div>
 
-            <div
-              style={{
-                borderTop: '1px solid var(--color-divider)',
-                borderBottom: '1px solid var(--color-divider)',
-                padding: '18px 0'
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 34,
-                  fontWeight: 600
-                }}
-              >
+            <div className={styles.priceBlock}>
+              <div className={styles.price}>
                 ${room.precioNoche.toLocaleString()}
               </div>
 
-              <div
-                style={{
-                  opacity: .65
-                }}
-              >
+              <div className={styles.priceUnit}>
                 por noche
               </div>
             </div>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2,1fr)',
-                gap: 18
-              }}
-            >
+            <div className={styles.facts}>
               <div>
-                <div
-                  style={{
-                    opacity: .65,
-                    fontSize: 13
-                  }}
-                >
+                <div className={styles.factLabel}>
                   Capacidad
                 </div>
 
@@ -303,12 +167,7 @@ export default function RoomDetail() {
               </div>
 
               <div>
-                <div
-                  style={{
-                    opacity: .65,
-                    fontSize: 13
-                  }}
-                >
+                <div className={styles.factLabel}>
                   Estado
                 </div>
 
@@ -325,11 +184,7 @@ export default function RoomDetail() {
             </div>
 
             <button
-              className="btn btn-primary"
-              style={{
-                marginTop: 'auto',
-                width: '100%'
-              }}
+              className={`btn btn-primary ${styles.reserveButton}`}
               onClick={handleReserve}
             >
               Reservar habitación
@@ -339,96 +194,55 @@ export default function RoomDetail() {
 
         {/* Descripción */}
 
-        <div
-          className="card elev-sm"
-          style={{
-            border: '1px solid var(--color-divider)'
-          }}
-        >
-          <h3
-            style={{
-              marginTop: 0
-            }}
-          >
+        <div className={`card ${styles.panel}`}>
+          <h3 className={styles.panelTitle}>
             Descripción
           </h3>
 
-          <p
-            style={{
-              margin: 0,
-              lineHeight: 1.8,
-              opacity: .82
-            }}
-          >
+          <p className={styles.description}>
             {room.descripcion}
           </p>
         </div>
 
         {/* Características */}
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-            gap: 18
-          }}
-        >
-          <div
-            className="card elev-sm"
-            style={{
-              border: '1px solid var(--color-divider)'
-            }}
-          >
-            <div style={{ opacity: .65, fontSize: 13 }}>
+        <div className={styles.features}>
+          <div className={`card ${styles.panel}`}>
+            <div className={styles.factLabel}>
               Número
             </div>
 
-            <h3 style={{ marginBottom: 0 }}>
+            <h3 className={styles.featureValue}>
               {room.numero}
             </h3>
           </div>
 
-          <div
-            className="card elev-sm"
-            style={{
-              border: '1px solid var(--color-divider)'
-            }}
-          >
-            <div style={{ opacity: .65, fontSize: 13 }}>
+          <div className={`card ${styles.panel}`}>
+            <div className={styles.factLabel}>
               Tipo
             </div>
 
-            <h3 style={{ marginBottom: 0 }}>
+            <h3 className={styles.featureValue}>
               {room.tipoHabitacion}
             </h3>
           </div>
 
-          <div
-            className="card elev-sm"
-            style={{
-              border: '1px solid var(--color-divider)'
-            }}
-          >
-            <div style={{ opacity: .65, fontSize: 13 }}>
+          <div className={`card ${styles.panel}`}>
+            <div className={styles.factLabel}>
               Capacidad
             </div>
 
-            <h3 style={{ marginBottom: 0 }}>
+            <h3 className={styles.featureValue}>
               {room.capacidad} personas
             </h3>
           </div>
 
-          <div
-            className="card elev-sm"
-            style={{
-              border: '1px solid var(--color-divider)'
-            }}
-          >
-            <div style={{ opacity: .65, fontSize: 13 }}>
+          <div className={`card ${styles.panel}`}>
+            <div className={styles.factLabel}>
               Precio
             </div>
 
-            <h3 style={{ marginBottom: 0 }}>
+            <h3 className={styles.featureValue}>
               ${room.precioNoche.toLocaleString()}
             </h3>
           </div>

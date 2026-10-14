@@ -1,0 +1,160 @@
+.root {
+  position: relative;
+}
+
+/* — Contenedor — */
+.page {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-10) var(--gutter) var(--space-18);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.title {
+  margin: 0;
+  font-size: 40px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: var(--fs-md);
+  color: var(--color-text-muted);
+}
+
+/* — Tabla — */
+.tableCard {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.table {
+  min-width: 820px;
+}
+
+.table th,
+.table td {
+  padding-inline: var(--space-4);
+  white-space: nowrap;
+}
+
+.table th {
+  background: var(--color-sunken);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.strong {
+  font-weight: var(--fw-semibold);
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.role {
+  display: inline-flex;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-sunken);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.actionsCell {
+  text-align: right;
+}
+
+.table th.actionsCell {
+  text-align: right;
+}
+
+.messageCell {
+  padding-block: var(--space-10);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.deleteButton {
+  color: var(--color-danger);
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+}
+
+/* — Paginación — */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pageInfo {
+  font-size: var(--fs-md);
+  color: var(--color-text-muted);
+}
+
+.pageButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pageButton {
+  min-width: var(--control-height-sm);
+}
+
+/* — Modal de reservas — */
+.modalMessage {
+  padding: var(--space-4) 0;
+  color: var(--color-text-muted);
+}
+
+.modalTableWrap {
+  max-height: 360px;
+  overflow: auto;
+  margin-inline: calc(var(--space-2) * -1);
+}
+
+.modalTableWrap th,
+.modalTableWrap td {
+  white-space: nowrap;
+}
+
+/* — Responsive — */
+@media (max-width: 640px) {
+  .page {
+    padding-top: var(--space-6);
+  }
+
+  .title {
+    font-size: var(--fs-3xl);
+  }
+}
