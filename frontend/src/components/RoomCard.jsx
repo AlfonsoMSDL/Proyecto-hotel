@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getRoomFirstImage } from '../api/rooms.js';
+import { getRoomFirstImage, BACKEND_URL_BASE } from '../api/rooms.js';
 import styles from './RoomCard.module.css';
 
 export default function RoomCard({ room, highlighted }) {
 
   const [foto, setFoto] = useState(null);
-
-  const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
 
   useEffect(() => {
     async function loadFoto() {

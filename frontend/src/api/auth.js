@@ -1,8 +1,5 @@
-// TODO: reemplazar por llamadas reales a tu backend (JWT/sesión/etc).
+import { BACKEND_URL_BASE } from './config.js';
 
-//const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
-//trayendo el hostname desde variables de entorno
-export const BACKEND_URL_BASE = "/hotel/api";
 export async function login(email, password) {
   const userLogin = {
     "correo":email,

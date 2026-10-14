@@ -5,6 +5,7 @@ import { fetchUsers, deleteUser } from '../../api/users.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import Swal from 'sweetalert2';
 import { authFetch } from '../../utils/session.js';
+import { BACKEND_URL_BASE } from '../../api/config.js';
 import styles from './AdminUsers.module.css';
 
 export default function AdminUsers() {
@@ -64,7 +65,7 @@ export default function AdminUsers() {
     try {
       setLoadingReservas(true);
       const encodedName = encodeURIComponent(nombreCompleto);
-      const res = await authFetch(`http://localhost:8181/hotel/api/reservas/clientes/${encodedName}`);
+      const res = await authFetch(`${BACKEND_URL_BASE}/reservas/clientes/${encodedName}`);
       if (!res.ok) {
         // Si el backend responde 404 o 204, consideramos que no hay reservas
         if (res.status === 404 || res.status === 204) {
