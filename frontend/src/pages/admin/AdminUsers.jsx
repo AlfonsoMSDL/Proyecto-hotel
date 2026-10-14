@@ -4,6 +4,7 @@ import Modal from '../../components/Modal.jsx';
 import { fetchUsers, deleteUser } from '../../api/users.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import Swal from 'sweetalert2';
+import { authFetch } from '../../utils/session.js';
 import styles from './AdminUsers.module.css';
 
 export default function AdminUsers() {
@@ -62,11 +63,8 @@ export default function AdminUsers() {
     // El backend ahora expone: /reservas/clientes/{nombreCompleto} (lista todas las reservas del cliente)
     try {
       setLoadingReservas(true);
-      const token = localStorage.getItem('token');
       const encodedName = encodeURIComponent(nombreCompleto);
-      const res = await fetch(`http://localhost:8181/hotel/api/reservas/clientes/${encodedName}`, {
-        headers: { 'Authorization': token ? `Bearer ${token}` : undefined }
-      });
+      const res = await authFetch(`http://localhost:8181/hotel/api/reservas/clientes/${encodedName}`);
       if (!res.ok) {
         // Si el backend responde 404 o 204, consideramos que no hay reservas
         if (res.status === 404 || res.status === 204) {

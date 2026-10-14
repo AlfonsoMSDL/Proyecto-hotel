@@ -1,5 +1,6 @@
 // TODO: reemplazar estos stubs por llamadas reales a tu backend.
 import { rooms } from '../data/mockData.js';
+import { authFetch } from '../utils/session.js';
 export const BACKEND_URL_BASE = "http://localhost:8181/hotel/api";
 
 async function parseErrorMessage(response, defaultMsg) {
@@ -135,12 +136,8 @@ export async function createRoom(payload, imageFiles = []) {
     formData.append('imagenes', file);
   });
 
-  const token = localStorage.getItem('token');
-  const response = await fetch(BACKEND_URL_BASE + '/habitaciones', {
+  const response = await authFetch(BACKEND_URL_BASE + '/habitaciones', {
     method: 'POST',
-    headers: {
-      'Authorization': token ? `Bearer ${token}` : undefined,
-    },
     body: formData,
   });
 
@@ -153,7 +150,6 @@ export async function createRoom(payload, imageFiles = []) {
 }
 
 export async function updateRoom(id, payload) {
-  const token = localStorage.getItem('token');
   const bodyData = {
     numero: Number(payload.number ?? payload.numero),
     tipoHabitacion: payload.type ?? payload.tipoHabitacion,
@@ -162,11 +158,10 @@ export async function updateRoom(id, payload) {
     descripcion: payload.description ?? payload.descripcion,
   };
 
-  const response = await fetch(`${BACKEND_URL_BASE}/habitaciones/${id}`, {
+  const response = await authFetch(`${BACKEND_URL_BASE}/habitaciones/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : undefined,
     },
     body: JSON.stringify(bodyData),
   });
@@ -180,15 +175,11 @@ export async function updateRoom(id, payload) {
 }
 
 export async function addRoomImage(idHabitacion, file) {
-  const token = localStorage.getItem('token');
   const formData = new FormData();
   formData.append('imagen', file);
 
-  const response = await fetch(`${BACKEND_URL_BASE}/habitaciones/${idHabitacion}/fotos`, {
+  const response = await authFetch(`${BACKEND_URL_BASE}/habitaciones/${idHabitacion}/fotos`, {
     method: 'POST',
-    headers: {
-      'Authorization': token ? `Bearer ${token}` : undefined,
-    },
     body: formData,
   });
 
@@ -201,12 +192,8 @@ export async function addRoomImage(idHabitacion, file) {
 }
 
 export async function deleteRoomImage(idFoto) {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${BACKEND_URL_BASE}/fotos/${idFoto}`, {
+  const response = await authFetch(`${BACKEND_URL_BASE}/fotos/${idFoto}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': token ? `Bearer ${token}` : undefined,
-    },
   });
 
   if (!response.ok) {
@@ -218,12 +205,8 @@ export async function deleteRoomImage(idFoto) {
 }
 
 export async function deleteRoom(id) {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`${BACKEND_URL_BASE}/habitaciones/${id}`, {
+  const res = await authFetch(`${BACKEND_URL_BASE}/habitaciones/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': token ? `Bearer ${token}` : undefined,
-    },
   });
 
   if (!res.ok) {

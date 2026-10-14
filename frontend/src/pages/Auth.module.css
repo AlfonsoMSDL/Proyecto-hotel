@@ -191,3 +191,13 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Aviso de sesión expirada (informativo, no es un error del formulario). */
+.infoBox {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  font-size: var(--fs-sm);
+}

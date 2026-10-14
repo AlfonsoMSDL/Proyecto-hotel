@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { jwtDecode } from 'jwt-decode';
@@ -13,6 +13,11 @@ export default function Login() {
   const { login } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Si llegó aquí por sesión expirada o desde una ruta protegida, SecurityRoute/AuthProvider
+  // dejan en el state la ruta de origen para volver a ella tras iniciar sesión.
+  const sessionExpired = location.state?.expired === true;
+  const redirectTo = location.state?.from;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +35,9 @@ export default function Login() {
         timer: 1500
       });
 
-      if (claims.authority.includes('ADMINISTRADOR')) {
+      if (redirectTo && redirectTo !== '/login') {
+        navigate(redirectTo, { replace: true });
+      } else if (claims.authority.includes('ADMINISTRADOR')) {
         navigate('/admin/habitaciones');
       } else {
         navigate('/mis-reservas');
@@ -57,6 +64,12 @@ export default function Login() {
             <h2 className={styles.formTitle}>Iniciar sesión</h2>
             <p className={styles.formSubtitle}>Accede para reservar y ver tu historial.</p>
           </div>
+
+          {sessionExpired && !error && (
+            <div className={styles.infoBox} role="status">
+              Tu sesión expiró. Inicia sesión de nuevo para continuar.
+            </div>
+          )}
 
           {error && (
             <div className={styles.errorBox}>
