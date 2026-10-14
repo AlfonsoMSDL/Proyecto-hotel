@@ -9,8 +9,6 @@ services:
       - datos:/var/lib/postgresql/data
     expose:
       - "5432"
-    ports:
-      - "55432:5432"
   backend:
     build:
       context: ./backend/
@@ -23,8 +21,6 @@ services:
       - ./backend/uploads/habitaciones:/app/uploads/habitaciones
     expose:
       - "8181"
-    ports:
-      - "8181:8181"
     depends_on:
       - bd
 
