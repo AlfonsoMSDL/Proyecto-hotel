@@ -331,7 +331,7 @@ Proyecto-Hotel/
 └── frontend/
     ├── Dockerfile                  # Build multi-etapa (Node → Nginx)
     ├── nginx.conf                  # SPA + proxy inverso de /hotel/api (Docker Compose)
-    ├── vercel.json                 # Equivalente para Vercel: rewrites de la API y de la SPA
+    ├── vercel.json                 # Vercel: fallback de la SPA y caché de /assets (la API va por una regla del panel)
     ├── vite.config.js              # Proxy de la API para npm run dev
     ├── package.json
     └── src/
@@ -451,17 +451,19 @@ Docker Compose junta todo en una máquina; en la nube cada pieza vive en un serv
 | Pieza | Compose | Nube |
 |---|---|---|
 | Frontend (archivos estáticos) | Nginx | **Vercel** |
-| Proxy de `/hotel/api/*` hacia el backend | Nginx (`nginx.conf`) | Rewrites de Vercel (`frontend/vercel.json`) |
+| Proxy de `/hotel/api/*` hacia el backend | Nginx (`nginx.conf`) | Regla de enrutamiento del proyecto en Vercel (se crea en el panel, **fuera del repo**) |
 | Backend (imagen Docker) | servicio `backend` | **AWS** (p. ej. EC2) |
 | Base de datos | servicio `bd` + volumen | **AWS RDS** (PostgreSQL) |
 | Variables de entorno | `.env` | Configuración de cada servicio |
 
-**`frontend/vercel.json`** hace por Vercel lo que `nginx.conf` hace en Docker: reenvía `/hotel/api/*` al backend y devuelve `index.html` en cualquier otra ruta para que React Router funcione al recargar. El navegador sigue hablando con un único origen, por eso el código del frontend no cambia (usa la ruta relativa `/hotel/api`).
+**`frontend/vercel.json`** cubre el resto del trabajo de Nginx: devuelve `index.html` en cualquier ruta para que React Router funcione al recargar y cachea `/assets/*`. El reenvío de `/hotel/api/*` al backend **no está en el repo**: es una regla de enrutamiento del proyecto, configurada en Vercel, para no publicar la URL del backend (`vercel.json` no admite variables de entorno). El navegador sigue hablando con un único origen, por eso el código del frontend no cambia (usa la ruta relativa `/hotel/api`).
 
 Antes de desplegar:
 - En Vercel, define **Root Directory = `frontend`** (el proyecto vive en una subcarpeta).
-- Reemplaza `https://api.tu-dominio.com` en `frontend/vercel.json` por la URL **HTTPS** pública de tu backend (`vercel.json` no admite comentarios ni variables de entorno, así que la URL va escrita en el archivo).
+- En Vercel, crea y **publica** una regla de enrutamiento (CDN → Routing Rules, o `vercel routes add`): un *rewrite* de `/hotel/api/:path*` a `https://<URL-HTTPS-de-tu-backend>/hotel/api/:path*`. Se aplica sin redesplegar y se ejecuta antes que las rutas de `vercel.json`. Comprueba la sintaxis exacta del destino (el panel usa `$1`, la CLI `:path*`; ver `vercel routes add --help`) y si la regla también aplica a los despliegues de *preview*.
 - En el backend (AWS) configura las mismas variables del `.env`, apuntando `POSTGRES_HOST` al endpoint de RDS.
+
+Si el login falla con un error de JSON (`Unexpected token '<'`), la regla de la API no existe o no está publicada: la petición está cayendo en el fallback a `index.html`.
 
 ---
 
