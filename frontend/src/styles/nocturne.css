@@ -3,7 +3,7 @@
    bordes y estados los aplica ThemeContext.jsx sobre <html>; aquí van los
    valores por defecto (modo oscuro) y todo lo que no cambia entre modos.
    Los estilos propios de cada componente viven en su Componente.module.css. */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@500..700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
   /* — Color: superficies y texto (oscuro por defecto; ThemeContext los cambia) — */
@@ -62,8 +62,8 @@
   --color-accent-2-900: #352814;
 
   /* — Tipografía — */
-  --font-heading: "Fraunces", Georgia, "Times New Roman", serif;
-  --font-heading-weight: 500;
+  --font-heading: "Inconsolata", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-heading-weight: 600;
   --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --fs-xs: 12px;
