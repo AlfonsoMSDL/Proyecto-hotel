@@ -23,6 +23,7 @@ Construido con **Spring Boot 4 (Java 21)**, **React 18**, **PostgreSQL** y **Doc
 - [Estructura del repositorio](#-estructura-del-repositorio)
 - [API REST](#-api-rest)
 - [Ejecución local](#️-ejecución-local)
+- [Despliegue en la nube](#️-despliegue-en-la-nube-vercel--aws)
 - [Estado y hoja de ruta](#-estado-y-hoja-de-ruta)
 - [Autor](#-autor)
 
@@ -268,7 +269,8 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 - **Secretos externalizados**: la clave de firma JWT y las credenciales de la base de datos se leen de variables de entorno (`.env` en la raíz, excluido de git).
 - **Superficie de red mínima**: en Docker Compose solo Nginx publica un puerto; backend y PostgreSQL solo son accesibles dentro de la red interna.
 - **Sesión coherente en el cliente**: el frontend descarta tokens vencidos, cierra la sesión al expirar y oculta el panel de administración a quien no tiene el rol (la autorización real sigue en el backend).
-- **CORS** configurado a nivel de aplicación.
+- **Administrador inicial sin credenciales por defecto**: se crea solo con `ADMIN_EMAIL` / `ADMIN_PASSWORD` del entorno (con pruebas unitarias que lo verifican).
+- **CORS** configurado a nivel de aplicación (hoy abierto; pendiente restringirlo al dominio del frontend).
 
 ---
 
@@ -298,6 +300,7 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 | **jwt-decode** | Lectura del JWT en el cliente |
 | **SweetAlert2** | Alertas y confirmaciones |
 | **CSS Modules + design tokens** | Estilos por componente, sistema de diseño propio y modo claro/oscuro |
+| **Google Fonts** | Inconsolata (títulos) y Plus Jakarta Sans (texto) |
 
 ### Base de datos e infraestructura
 | Tecnología | Uso |
@@ -306,6 +309,8 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 | **Docker** (builds multi-etapa) | Backend: compila con Maven y ejecuta con un JRE ligero. Frontend: compila con Node y sirve con Nginx |
 | **Nginx** | Sirve la SPA (con fallback para React Router) y actúa como proxy inverso hacia la API |
 | **Docker Compose** | Orquestación de frontend, backend y base de datos, con volúmenes persistentes |
+| **Vercel** | Hosting del frontend y reenvío de la API mediante una regla de enrutamiento |
+| **AWS (EC2 + RDS)** | Backend en contenedor sobre EC2 y PostgreSQL gestionado en RDS |
 
 ---
 
@@ -454,7 +459,7 @@ Docker Compose junta todo en una máquina; en la nube cada pieza vive en un serv
 |---|---|---|
 | Frontend (archivos estáticos) | Nginx | **Vercel** |
 | Proxy de `/hotel/api/*` hacia el backend | Nginx (`nginx.conf`) | Regla de enrutamiento del proyecto en Vercel (se crea en el panel, **fuera del repo**) |
-| Backend (imagen Docker) | servicio `backend` | **AWS** (p. ej. EC2) |
+| Backend (imagen Docker) | servicio `backend` | **AWS EC2** (el puerto 80 de la instancia se mapea al 8181 del contenedor, `80:8181`) |
 | Base de datos | servicio `bd` + volumen | **AWS RDS** (PostgreSQL) |
 | Variables de entorno | `.env` | Configuración de cada servicio |
 
@@ -462,8 +467,13 @@ Docker Compose junta todo en una máquina; en la nube cada pieza vive en un serv
 
 Antes de desplegar:
 - En Vercel, define **Root Directory = `frontend`** (el proyecto vive en una subcarpeta).
-- En Vercel, crea y **publica** una regla de enrutamiento (CDN → Routing Rules, o `vercel routes add`): un *rewrite* de `/hotel/api/:path*` a `https://<URL-HTTPS-de-tu-backend>/hotel/api/:path*`. Se aplica sin redesplegar y se ejecuta antes que las rutas de `vercel.json`. Comprueba la sintaxis exacta del destino (el panel usa `$1`, la CLI `:path*`; ver `vercel routes add --help`) y si la regla también aplica a los despliegues de *preview*.
+- En Vercel, crea y **publica** una regla de enrutamiento (CDN → Routing Rules, o `vercel routes add`): un *rewrite* de `/hotel/api/(.*)` a `http://<IP-o-dominio-del-backend>/hotel/api/$1` (en el panel se usa `(.*)` y `$1`; la CLI usa `:path*`, ver `vercel routes add --help`). Hay que pulsar **Save** y luego **Publish**; se aplica sin redesplegar y se ejecuta antes que las rutas de `vercel.json`.
+- En Vercel, define **Production Branch = `despliegue`** (Settings → Environments → Production), para que los despliegues de producción salgan de esta rama.
 - En el backend (AWS) configura las mismas variables del `.env`, apuntando `POSTGRES_HOST` al endpoint de RDS.
+
+> ⚠️ **Pendiente: HTTPS en el tramo Vercel → backend.** Hoy ese tramo viaja por HTTP hacia la IP de EC2, así que las credenciales y el JWT no van cifrados entre Vercel y AWS. El siguiente paso es un dominio (o subdominio gratuito) y un proxy con certificado automático como Caddy delante del backend, y usar `https://` en el destino de la regla.
+
+> ⚠️ El administrador inicial solo se crea si no existe. Si el backend desplegado se levantó con una versión antigua que tenía credenciales por defecto, hay que recrear la imagen con las variables `ADMIN_EMAIL` / `ADMIN_PASSWORD` y eliminar esa cuenta antigua desde el panel de usuarios.
 
 Si el login falla con un error de JSON (`Unexpected token '<'`), la regla de la API no existe o no está publicada: la petición está cayendo en el fallback a `index.html`.
 
@@ -481,13 +491,17 @@ Si el login falla con un error de JSON (`Unexpected token '<'`), la regla de la 
 - ✅ Panel de administración completo: gestión de habitaciones, fotos, usuarios y gestión de reservas con check-in y check-out en tiempo real
 - ✅ Contenerización completa con Docker Compose: backend, base de datos y frontend servido por Nginx como proxy inverso
 - ✅ Rutas del frontend protegidas por sesión y por rol (el panel de administración solo para `ADMINISTRADOR`)
+- ✅ Sesión del frontend sincronizada con la expiración del JWT
+- ✅ Despliegue en la nube: frontend en Vercel, backend en EC2 y base de datos en RDS
 
 **En progreso / próximos pasos**
 - ⏳ Integración de pasarela de pagos (el modelo `Pago` ya existe)
 - ⏳ Notificaciones por correo (confirmación y cancelación de reservas)
+- ⏳ HTTPS entre Vercel y el backend (dominio + Caddy)
 - ⏳ Perfiles dev/prod y CORS restringido a orígenes concretos
-- ⏳ Pruebas unitarias y de integración
-- ⏳ CI/CD y despliegue en AWS
+- ⏳ Más pruebas unitarias y de integración (hoy solo cubren la creación del administrador inicial)
+- ⏳ Almacenar las fotos de habitaciones en un servicio de objetos (S3)
+- ⏳ CI/CD
 
 ---
 
