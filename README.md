@@ -4,7 +4,7 @@ Plataforma web **fullstack** que digitaliza la operación de reservas de un hote
 
 Construido con **Spring Boot 4 (Java 21)**, **React 18**, **PostgreSQL** y **Docker**, priorizando la arquitectura en capas, un modelado de dominio cuidadoso, la seguridad con **JWT** y reglas de negocio que reflejan la operación real de un hotel.
 
-> 🌐 **Demo en línea:** https://proyecto-hotel-eta.vercel.app/
+> 🌐 **Demo en línea:** https://proyecto-hotel-beta.vercel.app/
 
 > 🚧 Proyecto personal en desarrollo activo.
 
