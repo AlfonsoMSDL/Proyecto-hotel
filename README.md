@@ -8,7 +8,7 @@ Construido con **Spring Boot 4 (Java 21)**, **React 18**, **PostgreSQL** y **Doc
 
 > 🚧 Proyecto personal en desarrollo activo.
 
-> 🌿 **Ramas:** `main` y `docker-local` contienen la versión pensada para probar en local con Docker Compose (Nginx + backend + PostgreSQL). Esta rama, `despliegue`, adapta el proyecto para publicarlo: frontend en Vercel y backend y base de datos en AWS.
+> 🌿 **Ramas:** `main` contiene la versión pensada para probar en local con Docker Compose (Nginx + backend + PostgreSQL). Esta rama, `despliegue`, adapta el proyecto para publicarlo: frontend en Vercel y backend y base de datos en AWS.
 
 ---
 
