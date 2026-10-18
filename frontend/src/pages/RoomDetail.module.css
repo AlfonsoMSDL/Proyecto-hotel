@@ -1,0 +1,315 @@
+/* — Estados de carga / error — */
+.status {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-14) var(--gutter);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* — Contenedor — */
+.page {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-10) var(--gutter) var(--space-18);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  min-height: var(--control-height-sm);
+  padding: var(--space-2) var(--space-3);
+  margin-left: calc(var(--space-3) * -1);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+}
+
+.topGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: stretch;
+}
+
+/* — Galería — */
+.gallery {
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+.thumbs {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 88px;
+  max-height: 500px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  padding: 2px;
+}
+
+.thumb {
+  flex: none;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  opacity: 0.75;
+  transition: opacity var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.thumb:hover {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+}
+
+.thumb:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.thumbActive {
+  opacity: 1;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.thumbImage {
+  display: block;
+  width: 100%;
+  height: 68px;
+  object-fit: cover;
+}
+
+.mainImageWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
+  border-radius: var(--radius-md);
+  background: var(--color-sunken);
+  overflow: hidden;
+}
+
+.mainImage {
+  width: 100%;
+  max-height: 500px;
+  object-fit: contain;
+}
+
+.noImage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 500px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-sunken),
+    var(--color-sunken) 10px,
+    color-mix(in srgb, var(--color-sunken) 80%, var(--color-text)) 10px,
+    color-mix(in srgb, var(--color-sunken) 80%, var(--color-text)) 20px
+  );
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* — Panel de información — */
+.info {
+  gap: var(--space-6);
+  padding: var(--space-8);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+.infoHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: var(--space-2) 0 0;
+  font-size: 40px;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  font-size: var(--fs-base);
+  color: var(--color-text-muted);
+}
+
+.priceBlock {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.price {
+  font-size: 36px;
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.priceUnit {
+  color: var(--color-text-muted);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.factLabel {
+  margin-bottom: var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.reserveButton {
+  width: 100%;
+  min-height: var(--control-height);
+  margin-top: auto;
+  font-size: var(--fs-base);
+}
+
+/* — Descripción y características — */
+.panel {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+}
+
+.panelTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-2xl);
+}
+
+.description {
+  margin: 0;
+  max-width: 72ch;
+  line-height: 1.8;
+  color: var(--color-text-muted);
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-5);
+}
+
+.featureValue {
+  margin: 0;
+  font-size: var(--fs-2xl);
+}
+
+/* — Responsive — */
+@media (max-width: 960px) {
+  .topGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mainImageWrap,
+  .noImage {
+    min-height: 380px;
+  }
+
+  .noImage {
+    height: 380px;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding-top: var(--space-6);
+    gap: var(--space-6);
+  }
+
+  /* Miniaturas debajo de la imagen principal (solo visual; el DOM no cambia). */
+  .gallery {
+    flex-direction: column-reverse;
+    padding: var(--space-3);
+  }
+
+  .thumbs {
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .thumb {
+    width: 76px;
+  }
+
+  .thumbImage {
+    height: 56px;
+  }
+
+  .mainImageWrap,
+  .noImage {
+    min-height: 260px;
+  }
+
+  .noImage {
+    height: 260px;
+  }
+
+  .mainImage {
+    max-height: 320px;
+  }
+
+  .info {
+    padding: var(--space-5);
+  }
+
+  .title {
+    font-size: var(--fs-3xl);
+  }
+
+  .price {
+    font-size: 30px;
+  }
+
+  .panel {
+    padding: var(--space-5);
+  }
+}
