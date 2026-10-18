@@ -8,7 +8,7 @@ Construido con **Spring Boot 4 (Java 21)**, **React 18**, **PostgreSQL** y **Doc
 
 > 🚧 Proyecto personal en desarrollo activo.
 
-> 🌿 **Ramas:** esta rama (`main`, igual que `docker-local`) es la versión para probar en local con Docker Compose (Nginx + backend + PostgreSQL). La rama `despliegue` adapta el proyecto para publicarlo: frontend en Vercel y backend y base de datos en AWS (EC2 + RDS), con las credenciales del administrador en variables de entorno.
+> 🌿 **Ramas:** `main` y `docker-local` contienen la versión pensada para probar en local con Docker Compose (Nginx + backend + PostgreSQL). Esta rama, `despliegue`, adapta el proyecto para publicarlo: frontend en Vercel y backend y base de datos en AWS.
 
 ---
 
@@ -25,6 +25,7 @@ Construido con **Spring Boot 4 (Java 21)**, **React 18**, **PostgreSQL** y **Doc
 - [Estructura del repositorio](#-estructura-del-repositorio)
 - [API REST](#-api-rest)
 - [Ejecución local](#️-ejecución-local)
+- [Despliegue en la nube](#️-despliegue-en-la-nube-vercel--aws)
 - [Estado y hoja de ruta](#-estado-y-hoja-de-ruta)
 - [Autor](#-autor)
 
@@ -270,7 +271,8 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 - **Secretos externalizados**: la clave de firma JWT y las credenciales de la base de datos se leen de variables de entorno (`.env` en la raíz, excluido de git).
 - **Superficie de red mínima**: en Docker Compose solo Nginx publica un puerto; backend y PostgreSQL solo son accesibles dentro de la red interna.
 - **Sesión coherente en el cliente**: el frontend descarta tokens vencidos, cierra la sesión al expirar y oculta el panel de administración a quien no tiene el rol (la autorización real sigue en el backend).
-- **CORS** configurado a nivel de aplicación.
+- **Administrador inicial sin credenciales por defecto**: se crea solo con `ADMIN_EMAIL` / `ADMIN_PASSWORD` del entorno (con pruebas unitarias que lo verifican).
+- **CORS** configurado a nivel de aplicación (hoy abierto; pendiente restringirlo al dominio del frontend).
 
 ---
 
@@ -300,6 +302,7 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 | **jwt-decode** | Lectura del JWT en el cliente |
 | **SweetAlert2** | Alertas y confirmaciones |
 | **CSS Modules + design tokens** | Estilos por componente, sistema de diseño propio y modo claro/oscuro |
+| **Google Fonts** | Inconsolata (títulos) y Plus Jakarta Sans (texto) |
 
 ### Base de datos e infraestructura
 | Tecnología | Uso |
@@ -308,6 +311,8 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 | **Docker** (builds multi-etapa) | Backend: compila con Maven y ejecuta con un JRE ligero. Frontend: compila con Node y sirve con Nginx |
 | **Nginx** | Sirve la SPA (con fallback para React Router) y actúa como proxy inverso hacia la API |
 | **Docker Compose** | Orquestación de frontend, backend y base de datos, con volúmenes persistentes |
+| **Vercel** | Hosting del frontend y reenvío de la API mediante una regla de enrutamiento |
+| **AWS (EC2 + RDS)** | Backend en contenedor sobre EC2 y PostgreSQL gestionado en RDS |
 
 ---
 
@@ -316,7 +321,7 @@ El script <code>backend/creacion_de_tablas.sql</code> crea el esquema e inserta 
 ```
 Proyecto-Hotel/
 ├── compose.yml                     # Orquestación: Nginx/frontend + backend + PostgreSQL
-├── .env                            # Variables de entorno (no se sube a git)
+├── .env.example                    # Plantilla de variables de entorno (copiar a .env, que no se sube a git)
 ├── backend/
 │   ├── Dockerfile                  # Build multi-etapa (Maven → JRE 21)
 │   ├── creacion_de_tablas.sql      # Esquema + datos iniciales
@@ -334,7 +339,8 @@ Proyecto-Hotel/
 │       └── config/                 # Seguridad, JWT, CORS, Swagger
 └── frontend/
     ├── Dockerfile                  # Build multi-etapa (Node → Nginx)
-    ├── nginx.conf                  # SPA + proxy inverso de /hotel/api
+    ├── nginx.conf                  # SPA + proxy inverso de /hotel/api (Docker Compose)
+    ├── vercel.json                 # Vercel: fallback de la SPA y caché de /assets (la API va por una regla del panel)
     ├── vite.config.js              # Proxy de la API para npm run dev
     ├── package.json
     └── src/
@@ -403,9 +409,11 @@ POSTGRES_DB=<nombre_de_la_base_de_datos>
 POSTGRES_PASSWORD=<contraseña_de_postgres>
 POSTGRES_HOST=bd
 SECRET_KEY_BACKEND=<clave_base64_de_al_menos_32_bytes>
+ADMIN_EMAIL=<correo_del_administrador>
+ADMIN_PASSWORD=<contraseña_del_administrador>
 ```
 
-Puedes generar la clave con:
+Hay una plantilla lista en [`.env.example`](.env.example): `cp .env.example .env`. Puedes generar la clave con:
 ```bash
 openssl rand -base64 32
 ```
@@ -421,10 +429,9 @@ docker compose up --build
 El backend y PostgreSQL no publican puertos: solo se accede a ellos a través de Nginx (o de la red interna de Docker).
 
 ### 4. Cuentas de prueba
-- Al arrancar por primera vez, el backend crea un **administrador por defecto**: `admin@gmail.com` / `admin`.
+- Al arrancar, el backend crea el **administrador inicial** con el `ADMIN_EMAIL` y el `ADMIN_PASSWORD` de tu `.env`, si esa cuenta aún no existe. No hay credenciales por defecto en el código: sin esas variables no se crea ningún administrador.
+- Si el administrador ya existe en la base de datos, cambiar el `.env` no modifica su contraseña (el backend solo crea la cuenta cuando no existe).
 - Los usuarios que se registran desde la app tienen rol **CLIENTE**.
-
-> ⚠️ Cambia la contraseña del administrador por defecto antes de desplegar la aplicación en un servidor público.
 
 ### (Opcional) Desarrollo del frontend con recarga en caliente
 `npm run dev` reenvía `/hotel/api` a `http://localhost:8181` (configurable con `VITE_BACKEND_TARGET`). Como el backend ya no publica ese puerto, para desarrollar exponlo temporalmente, por ejemplo con un `compose.override.yml`:
@@ -446,6 +453,34 @@ npm run dev
 
 ---
 
+## ☁️ Despliegue en la nube (Vercel + AWS)
+
+Docker Compose junta todo en una máquina; en la nube cada pieza vive en un servicio distinto:
+
+| Pieza | Compose | Nube |
+|---|---|---|
+| Frontend (archivos estáticos) | Nginx | **Vercel** |
+| Proxy de `/hotel/api/*` hacia el backend | Nginx (`nginx.conf`) | Regla de enrutamiento del proyecto en Vercel (se crea en el panel, **fuera del repo**) |
+| Backend (imagen Docker) | servicio `backend` | **AWS EC2** (el puerto 80 de la instancia se mapea al 8181 del contenedor, `80:8181`) |
+| Base de datos | servicio `bd` + volumen | **AWS RDS** (PostgreSQL) |
+| Variables de entorno | `.env` | Configuración de cada servicio |
+
+**`frontend/vercel.json`** cubre el resto del trabajo de Nginx: devuelve `index.html` en cualquier ruta para que React Router funcione al recargar y cachea `/assets/*`. El reenvío de `/hotel/api/*` al backend **no está en el repo**: es una regla de enrutamiento del proyecto, configurada en Vercel, para no publicar la URL del backend (`vercel.json` no admite variables de entorno). El navegador sigue hablando con un único origen, por eso el código del frontend no cambia (usa la ruta relativa `/hotel/api`).
+
+Antes de desplegar:
+- En Vercel, define **Root Directory = `frontend`** (el proyecto vive en una subcarpeta).
+- En Vercel, crea y **publica** una regla de enrutamiento (CDN → Routing Rules, o `vercel routes add`): un *rewrite* de `/hotel/api/(.*)` a `http://<IP-o-dominio-del-backend>/hotel/api/$1` (en el panel se usa `(.*)` y `$1`; la CLI usa `:path*`, ver `vercel routes add --help`). Hay que pulsar **Save** y luego **Publish**; se aplica sin redesplegar y se ejecuta antes que las rutas de `vercel.json`.
+- En Vercel, define **Production Branch = `despliegue`** (Settings → Environments → Production), para que los despliegues de producción salgan de esta rama.
+- En el backend (AWS) configura las mismas variables del `.env`, apuntando `POSTGRES_HOST` al endpoint de RDS.
+
+> ⚠️ **Pendiente: HTTPS en el tramo Vercel → backend.** Hoy ese tramo viaja por HTTP hacia la IP de EC2, así que las credenciales y el JWT no van cifrados entre Vercel y AWS. El siguiente paso es un dominio (o subdominio gratuito) y un proxy con certificado automático como Caddy delante del backend, y usar `https://` en el destino de la regla.
+
+> ⚠️ El administrador inicial solo se crea si no existe. Si la base de datos ya tiene un administrador de pruebas (p. ej. creado antes con otras credenciales), cambiar las variables no lo elimina: recrea el contenedor del backend con las variables nuevas, entra con la cuenta nueva y borra la antigua desde el panel de usuarios.
+
+Si el login falla con un error de JSON (`Unexpected token '<'`), la regla de la API no existe o no está publicada: la petición está cayendo en el fallback a `index.html`.
+
+---
+
 ## 🗺️ Estado y hoja de ruta
 
 **Implementado**
@@ -458,14 +493,17 @@ npm run dev
 - ✅ Panel de administración completo: gestión de habitaciones, fotos, usuarios y gestión de reservas con check-in y check-out en tiempo real
 - ✅ Contenerización completa con Docker Compose: backend, base de datos y frontend servido por Nginx como proxy inverso
 - ✅ Rutas del frontend protegidas por sesión y por rol (el panel de administración solo para `ADMINISTRADOR`)
-- ✅ Despliegue en la nube (Vercel + AWS EC2 + RDS), disponible en la rama `despliegue`
+- ✅ Sesión del frontend sincronizada con la expiración del JWT
+- ✅ Despliegue en la nube: frontend en Vercel, backend en EC2 y base de datos en RDS
 
 **En progreso / próximos pasos**
 - ⏳ Integración de pasarela de pagos (el modelo `Pago` ya existe)
 - ⏳ Notificaciones por correo (confirmación y cancelación de reservas)
+- ⏳ HTTPS entre Vercel y el backend (dominio + Caddy)
 - ⏳ Perfiles dev/prod y CORS restringido a orígenes concretos
-- ⏳ Pruebas unitarias y de integración
-- ⏳ CI/CD y HTTPS entre el frontend y el backend
+- ⏳ Más pruebas unitarias y de integración (hoy solo cubren la creación del administrador inicial)
+- ⏳ Almacenar las fotos de habitaciones en un servicio de objetos (S3)
+- ⏳ CI/CD
 
 ---
 

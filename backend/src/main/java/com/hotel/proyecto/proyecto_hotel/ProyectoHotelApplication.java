@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -26,6 +27,14 @@ public class ProyectoHotelApplication implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder encoder;
 
+    // Credenciales del administrador inicial: vienen de variables de entorno
+    // (ADMIN_EMAIL / ADMIN_PASSWORD, vía application.properties). No hay valores por defecto.
+    @Value("${app.admin.email:}")
+    private String adminEmail;
+
+    @Value("${app.admin.password:}")
+    private String adminPassword;
+
     @PostConstruct
     public void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("America/Bogota"));
@@ -37,17 +46,24 @@ public class ProyectoHotelApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        //Guardando al usuario administrador por defecto en caso de que no exista (arrancar por primera vez)
+        //Guardando al usuario administrador inicial en caso de que no exista (arrancar por primera vez)
 
-        Optional<Usuario> usuarioAdmin = usuarioRepository.findByCorreo("admin@gmail.com");
+        //Sin credenciales configuradas no se crea ninguna cuenta: nunca hay una contraseña por defecto en el código
+        if (adminEmail.isBlank() || adminPassword.isBlank()) {
+            log.warn("ADMIN_EMAIL y/o ADMIN_PASSWORD no están definidos: no se creará la cuenta de administrador");
+            return;
+        }
+
+        String correoAdmin = adminEmail.trim();
+
+        Optional<Usuario> usuarioAdmin = usuarioRepository.findByCorreo(correoAdmin);
 
         if(usuarioAdmin.isEmpty()){
             Usuario usuarioGuardar = Usuario.builder()
                 .nombre("ADMIN")
                 .apellido("ADMIN")
-                .celular("3045440396")
-                .correo("admin@gmail.com")
-                .clave(encoder.encode("admin"))
+                .correo(correoAdmin)
+                .clave(encoder.encode(adminPassword))
                 .rol(Rol.ADMINISTRADOR)
             .build();
 
