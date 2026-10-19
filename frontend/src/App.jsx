@@ -11,30 +11,35 @@ import AdminBookings from './pages/admin/AdminBookings.jsx';
 import AdminUsers from './pages/admin/AdminUsers.jsx';
 import BookRoom from './pages/BookRoom.jsx';
 import SecurityRoute from './components/SecurityRoute.jsx';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Catalog />} />
-      <Route path="/habitacion/:id" element={<RoomDetail />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/registro" element={<Register />} />
+    <>
+      <Routes>
+        <Route path="/" element={<Catalog />} />
+        <Route path="/habitacion/:id" element={<RoomDetail />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Register />} />
 
-      {/* Requieren sesión iniciada */}
-      <Route element={<SecurityRoute><Outlet /></SecurityRoute>}>
-        <Route path="/reservar/:idHabitacion" element={<BookRoom />} />
-        <Route path="/habitacion/:id/reservar" element={<BookRoom />} />
-        <Route path="/mis-reservas" element={<MyBookings />} />
-      </Route>
+        {/* Requieren sesión iniciada */}
+        <Route element={<SecurityRoute><Outlet /></SecurityRoute>}>
+          <Route path="/reservar/:idHabitacion" element={<BookRoom />} />
+          <Route path="/habitacion/:id/reservar" element={<BookRoom />} />
+          <Route path="/mis-reservas" element={<MyBookings />} />
+        </Route>
 
-      {/* Requieren sesión iniciada y rol de administrador */}
-      <Route element={<SecurityRoute roles={['ADMINISTRADOR']}><Outlet /></SecurityRoute>}>
-        <Route path="/admin/habitaciones" element={<AdminRooms />} />
-        <Route path="/admin/habitaciones/nueva" element={<AdminRoomForm />} />
-        <Route path="/admin/habitaciones/:id" element={<AdminRoomForm />} />
-        <Route path="/admin/reservas" element={<AdminBookings />} />
-        <Route path="/admin/usuarios" element={<AdminUsers />} />
-      </Route>
-    </Routes>
+        {/* Requieren sesión iniciada y rol de administrador */}
+        <Route element={<SecurityRoute roles={['ADMINISTRADOR']}><Outlet /></SecurityRoute>}>
+          <Route path="/admin/habitaciones" element={<AdminRooms />} />
+          <Route path="/admin/habitaciones/nueva" element={<AdminRoomForm />} />
+          <Route path="/admin/habitaciones/:id" element={<AdminRoomForm />} />
+          <Route path="/admin/reservas" element={<AdminBookings />} />
+          <Route path="/admin/usuarios" element={<AdminUsers />} />
+        </Route>
+      </Routes>
+      <Analytics />
+    </>
+    
   );
 }
